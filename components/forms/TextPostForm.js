@@ -6,7 +6,8 @@ import { Colors } from "../../constants/styles";
 
 function TextPostForm() {
     const [posts, setPosts] = useState();
-    const [presentPost, setPresentPost] = useState();
+    const [presentPostTitle, setPresentPostTitle] = useState();
+    const [presentPostText, setPresentPostText] = useState();
 
     useEffect(() => {
       return onValue(ref(db, '/posts'), querySnapShot => {
@@ -21,10 +22,11 @@ function TextPostForm() {
 
     function addNewPost() {
       push(ref(db, '/posts'), {
-        done: false,
-        title: presentPost,
+        title: presentPostTitle,
+        text: presentPostText,
       });
-      setPresentPost("");
+      setPresentPostTitle("");
+      setPresentPostText("");
     }
   
     function removePost() {
@@ -36,10 +38,18 @@ function TextPostForm() {
         <Text>Create you post!</Text>
         <TextInput
           placeholder="Post Title"
-          value={presentPost}
+          value={presentPostTitle}
           style={styles.input}
           keyboardType="default"
-          onChangeText={(text) => {setPresentPost(text)}}
+          onChangeText={(text) => {setPresentPostTitle(text)}}
+          onSubmitEditing={addNewPost}
+        />
+        <TextInput
+          placeholder="Post content..."
+          value={presentPostText}
+          style={styles.input}
+          keyboardType="default"
+          onChangeText={(text) => {setPresentPostText(text)}}
           onSubmitEditing={addNewPost}
         />
 
@@ -49,7 +59,7 @@ function TextPostForm() {
               title="Create Post"
               onPress={addNewPost}
               color={'blue'}
-              disabled={presentPost == ''}
+              disabled={presentPostTitle == ''}
             />
           </View>
           <View>
