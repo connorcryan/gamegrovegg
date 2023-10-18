@@ -39,7 +39,6 @@ function AuthStack() {
 
 function AuthenticatedStack() {
 
-
   return (
     <Stack.Navigator
       screenOptions={{

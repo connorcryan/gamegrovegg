@@ -1,32 +1,68 @@
-import { useState } from "react";
+import { ref, onValue, push, update, remove } from 'firebase/database';
+import { db } from '../../firebase-config';
+import { useState, useEffect } from "react";
 import { StyleSheet, TextInput, View, Text, Button, SafeAreaView } from "react-native";
 import { Colors } from "../../constants/styles";
 
 function TextPostForm() {
-    const [title, setTitle] = useState();
-    const [text, setText] = useState();
+    const [posts, setPosts] = useState();
+    const [presentPost, setPresentPost] = useState();
+
+    useEffect(() => {
+      return onValue(ref(db, '/posts'), querySnapShot => {
+        let data = querySnapShot.val() || {};
+        let postItems = {...data};
+        setPosts(postItems);
+      });
+    }, []);
+
+    /*const [title, setTitle] = useState();
+    const [text, setText] = useState();*/
+
+    function addNewPost() {
+      push(ref(db, '/posts'), {
+        done: false,
+        title: presentPost,
+      });
+      setPresentPost("");
+    }
+  
+    function removePost() {
+      remove(ref(db, '/posts'));
+    }
 
     return (
       <SafeAreaView>
         <Text>Create you post!</Text>
         <TextInput
           placeholder="Post Title"
-          value={title}
-          onChangeText={(text) => setTitle(text)}
-          keyboardType="default"
+          value={presentPost}
           style={styles.input}
-        />
-        <TextInput
-          placeholder="Post content..."
-          value={text}
-          onChangeText={(text) => setText(text)}
           keyboardType="default"
-          style={styles.input}
-          onSubmitEditing={() => alert("Your pos has been Submitted!")}
+          onChangeText={(text) => {setPresentPost(text)}}
+          onSubmitEditing={addNewPost}
         />
+
+        <View>
+          <View>
+            <Button 
+              title="Create Post"
+              onPress={addNewPost}
+              color={'blue'}
+              disabled={presentPost == ''}
+            />
+          </View>
+          <View>
+            <Button 
+              title="Remove Post"
+              onPress={removePost}
+              color={'red'}
+              style={{marginTop: 20}}
+            />
+          </View>
+        </View>
       </SafeAreaView>
     );
-
 }
 
 export default TextPostForm;

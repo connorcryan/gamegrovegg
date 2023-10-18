@@ -1,17 +1,22 @@
 import axios from 'axios';
+
 import { useContext, useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { AuthContext } from '../../components/store/auth-context';
+import TextPostContainer from '../../components/containers/TextPostContainer';
+import TextPostForm from '../../components/forms/TextPostForm';
 
 function HomeScreen() {
   const [fetchedMesage, setFetchedMessage] = useState("");
 
   const authCtx = useContext(AuthContext);
   const token = authCtx.token;
+
   useEffect(() => {
     axios
       .get(
-        "https://gamegrove-default-rtdb.europe-west1.firebasedatabase.app/.json?auth=" + token
+        "https://gamegrove-default-rtdb.europe-west1.firebasedatabase.app/.json?auth=" +
+          token
       )
       .then((response) => {
         setFetchedMessage(response.data);
@@ -20,9 +25,16 @@ function HomeScreen() {
 
   return (
     <View style={styles.rootContainer}>
-      <Text style={styles.title}>Welcome!</Text>
-      <Text>You authenticated successfully!</Text>
-      <Text>{JSON.stringify(fetchedMesage)}</Text>
+      <ScrollView>
+        <Text style={styles.title}>Welcome!</Text>
+        <Text>You authenticated successfully!</Text>
+        <Text>{JSON.stringify(fetchedMesage)}</Text>
+        <TextPostContainer />
+        <View>
+
+        </View>
+        <TextPostForm />
+      </ScrollView>
     </View>
   );
 }
@@ -34,7 +46,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
+    //padding: 32,
   },
   title: {
     fontSize: 20,
