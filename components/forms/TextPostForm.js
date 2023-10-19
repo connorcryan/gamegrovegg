@@ -9,9 +9,6 @@ function TextPostForm() {
   const [presentPostTitle, setPresentPostTitle] = useState("");
   const [presentPostText, setPresentPostText] = useState("");
 
-  // This is not needed, and it should be removed
-  // const postKeys = Object.keys(posts);
-
   useEffect(() => {
     const unsubscribe = onValue(ref(db, 'posts'), (querySnapShot) => {
       if (querySnapShot.exists()) {
@@ -39,21 +36,18 @@ function TextPostForm() {
   }
 
   function removePost() {
-    // This will remove the entire 'posts' node. If you want to remove a specific post, you need to pass the post's unique key.
-    // Use: remove(ref(db, `posts/${postKey}`); where postKey is the key of the post you want to remove.
-    remove(ref(db, 'posts'));
+    // This is a remove function to be implemented later 
+    remove(ref(db, `posts/${postKey}`));
   }
-
-  // This function is not needed, as you are updating posts directly in addNewPost
 
   return (
     <SafeAreaView>
-      <View>
+      <View style={styles.container}>
         {Object.keys(posts).length > 0 ? (
           Object.keys(posts).map((key) => (
             <View key={key}>
-              <Text>{posts[key].title}</Text>
-              <Text>{posts[key].text}</Text>
+              <Text style={styles.title}>{posts[key].title}</Text>
+              <Text style={styles.text}>{posts[key].text}</Text>
             </View>
           ))
         ) : (
@@ -105,17 +99,30 @@ export default TextPostForm;
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        backgroundColor: Colors.primary100,
-        alignItems: "center",
-        justifyContent: "center",
+      width: '100%',
+      borderRadius: 12,
+      backgroundColor: Colors.primary50,
+      elevation: 2,
+      shadowColor: 'white',
+      shadowOffset: { width: 1, height: 1 },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
     },
     title: {
-        fontSize: 40,
-        color: Colors.primary500,
-        marginBottom: 20,
-        fontWeight: "bold",
+      fontSize: 20,
+      fontWeight: 'bold',
+      paddingHorizontal: 10,
+      paddingTop: 10,
+      paddingBottom: 5,
+      color: Colors.primary700,
     },
+    text: {
+      fontSize: 16,
+      paddingHorizontal: 10,
+      paddingTop: 5,
+      paddingBottom: 10,
+      color: Colors.primary800,
+  },
     input: {
         backgroundColor: 'white',
         padding: 10,
