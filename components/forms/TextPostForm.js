@@ -1,24 +1,32 @@
-import { ref, onValue, push, update, remove } from 'firebase/database';
 import { db } from '../../firebase-config';
+import { ref, onValue, push, update, remove } from 'firebase/database';
 import { useState, useEffect } from "react";
 import { StyleSheet, TextInput, View, Text, Button, SafeAreaView } from "react-native";
 import { Colors } from "../../constants/styles";
 
 function TextPostForm() {
-    const [posts, setPosts] = useState();
-    const [presentPostTitle, setPresentPostTitle] = useState();
-    const [presentPostText, setPresentPostText] = useState();
+    const [posts, setPosts] = useState({});
+    const [presentPostTitle, setPresentPostTitle] = useState("");
+    const [presentPostText, setPresentPostText] = useState("");
+    
+    const postKeys = Object.keys(posts);
 
     useEffect(() => {
-      return onValue(ref(db, '/posts'), querySnapShot => {
-        let data = querySnapShot.val() || {};
-        let postItems = {...data};
-        setPosts(postItems);
+      const unsubscribe = onValue(ref(db, '/posts'), (querySnapShot) => {
+        if (querySnapShot.exists()) {
+          let data = querySnapShot.val() || {};
+          let postItems = { ...data };
+          setPosts(postItems);
+        } else {
+          console.log('⛔️ Object is falsy');
+        }
       });
+  
+      return () => {
+        // Cleanup the listener when the component unmounts
+        unsubscribe();
+      };
     }, []);
-
-    /*const [title, setTitle] = useState();
-    const [text, setText] = useState();*/
 
     function addNewPost() {
       push(ref(db, '/posts'), {
@@ -33,8 +41,31 @@ function TextPostForm() {
       remove(ref(db, '/posts'));
     }
 
+    const PostItem = ({postItems: {title, text}, id}) => {
+      update(ref(db, '/posts'), {
+        [id]: {
+          title,
+          text
+        },
+      });
+    };
+
     return (
       <SafeAreaView>
+        <View>
+        {postKeys.length > 0 ? (
+          postKeys.map(key => (
+            <PostItem 
+            key={key}
+            id={key}
+            postItems={posts[key]}
+            />
+          ))
+        ) : (
+          <Text> No posts created...</Text>
+        )}
+
+        </View>
         <Text>Create you post!</Text>
         <TextInput
           placeholder="Post Title"
