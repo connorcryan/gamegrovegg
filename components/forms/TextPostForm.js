@@ -1,33 +1,17 @@
 import { db } from '../../firebase-config';
-import { ref, onValue, push, remove } from 'firebase/database';
-import { useState, useEffect } from "react";
+import { ref, push, remove, set } from 'firebase/database';
+import { useState } from "react";
 import { StyleSheet, TextInput, View, Text, Button, SafeAreaView } from "react-native";
 import { Colors } from "../../constants/styles";
 
 function TextPostForm() {
-  const [posts, setPosts] = useState({});
+  
   const [presentPostTitle, setPresentPostTitle] = useState("");
   const [presentPostText, setPresentPostText] = useState("");
 
-  useEffect(() => {
-    const unsubscribe = onValue(ref(db, 'posts'), (querySnapShot) => {
-      if (querySnapShot.exists()) {
-        let data = querySnapShot.val() || {};
-        setPosts(data);
-      } else {
-        console.log('⛔️ Object is falsy');
-      }
-    });
-
-    return () => {
-      // Cleanup the listener when the component unmounts
-      unsubscribe();
-    };
-  }, []);
-
   function addNewPost() {
     const newPostRef = push(ref(db, 'posts')); // Create a reference to the new post
-    update(newPostRef, { // Update the new post's data
+    set(newPostRef, { // Update the new post's data
       title: presentPostTitle,
       text: presentPostText,
     });
@@ -41,25 +25,14 @@ function TextPostForm() {
   }
 
   return (
-    <SafeAreaView>
-      <View style={styles.container}>
-        {Object.keys(posts).length > 0 ? (
-          Object.keys(posts).map((key) => (
-            <View key={key}>
-              <Text style={styles.title}>{posts[key].title}</Text>
-              <Text style={styles.text}>{posts[key].text}</Text>
-            </View>
-          ))
-        ) : (
-          <Text>No posts created...</Text>
-        )}
-      </View>
-      <Text>Create your post!</Text>
+    <SafeAreaView style={styles.container}>
+      <Text style={styles.title}>Create your post!</Text>
       <TextInput
         placeholder="Post Title"
         value={presentPostTitle}
-        style={styles.input}
+        style={[styles.input, styles.text]}
         keyboardType="default"
+        multiline={true}
         onChangeText={(text) => {
           setPresentPostTitle(text);
         }}
@@ -69,6 +42,7 @@ function TextPostForm() {
         value={presentPostText}
         style={styles.input}
         keyboardType="default"
+        multiline={true}
         onChangeText={(text) => {
           setPresentPostText(text);
         }}
@@ -99,9 +73,12 @@ export default TextPostForm;
 
 const styles = StyleSheet.create({
     container: {
-      width: '100%',
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center', 
+      marginHorizontal: 10,
+      backgroundColor: Colors.accent600,
       borderRadius: 12,
-      backgroundColor: Colors.primary50,
       elevation: 2,
       shadowColor: 'white',
       shadowOffset: { width: 1, height: 1 },
@@ -109,7 +86,8 @@ const styles = StyleSheet.create({
       shadowRadius: 4,
     },
     title: {
-      fontSize: 20,
+      alignItems: 'center',
+      fontSize: 24,
       fontWeight: 'bold',
       paddingHorizontal: 10,
       paddingTop: 10,
@@ -121,11 +99,15 @@ const styles = StyleSheet.create({
       paddingHorizontal: 10,
       paddingTop: 5,
       paddingBottom: 10,
+      maxWidth: 400,
+      maxHeight: 100,
       color: Colors.primary800,
   },
     input: {
-        backgroundColor: 'white',
+        backgroundColor: Colors.accent400,
+        flexWrap: 'wrap',
         padding: 10,
+        borderRadius: 12,
         width: "80%",
         marginTop: 15,
         color: "#000",

@@ -5,6 +5,7 @@ import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { AuthContext } from '../../components/store/auth-context';
 import TextPostContainer from '../../components/containers/TextPostContainer';
 import TextPostForm from '../../components/forms/TextPostForm';
+import TextPostDisplay from '../../components/containers/PostDisplay';
 
 function HomeScreen() {
   const [fetchedMesage, setFetchedMessage] = useState("");
@@ -33,6 +34,7 @@ function HomeScreen() {
         <View>
 
         </View>
+        <TextPostDisplay/>
         <TextPostForm />
       </ScrollView>
     </View>
