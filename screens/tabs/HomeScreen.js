@@ -27,15 +27,10 @@ function HomeScreen() {
   return (
     <View style={styles.rootContainer}>
       <ScrollView>
-        <Text style={styles.title}>Welcome!</Text>
+        {/* <Text style={styles.title}>Welcome!</Text>
         <Text>You authenticated successfully!</Text>
-        <Text>{JSON.stringify(fetchedMesage)}</Text>
-        <TextPostContainer />
-        <View>
-
-        </View>
+        <Text>{JSON.stringify(fetchedMesage)}</Text> */}
         <TextPostDisplay/>
-        <TextPostForm />
       </ScrollView>
     </View>
   );
