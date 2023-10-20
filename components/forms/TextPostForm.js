@@ -1,25 +1,26 @@
 import { db } from '../../firebase-config';
 import { ref, push, remove, set } from 'firebase/database';
 import { useState } from "react";
-import { StyleSheet, TextInput, View, Text, SafeAreaView, TouchableWithoutFeedback, Keyboard } from "react-native";
+import { StyleSheet, TextInput, View, Text, SafeAreaView, TouchableWithoutFeedback, Keyboard, Alert } from "react-native";
 import { Colors } from "../../constants/styles";
 import Button from '../ui/Button';
 
-function TextPostForm() {
+function TextPostForm({onClose}) {
   
   const [presentPostTitle, setPresentPostTitle] = useState("");
   const [presentPostText, setPresentPostText] = useState("");
 
-  // const handleAddNewPost = () => {
-  //   if (presentPostTitle.trim() !== '' && presentPostText.trim() !== '') {
-  //     // Both fields are not empty, proceed with adding the post
-  //     addNewPost({ title: presentPostTitle, text: presentPostText });
-  //     // Close the modal
-  //     closeModal();
-  //   } else {
-  //     console.log('THIS IS NOT WOKRING');
-  //   }
-  // };
+  const handleAddNewPost = () => {
+    if (presentPostTitle.trim() !== '' && presentPostText.trim() !== '') {
+      // Both fields are not empty, proceed with adding the post
+      addNewPost({ title: presentPostTitle, text: presentPostText });
+      // Close the modal
+      onClose();
+    } else {
+      Alert.alert('Please ensure both input are not empty');
+      console.log('THIS IS NOT WOKRING');
+    }
+  };
 
   function addNewPost() {
     const newPostRef = push(ref(db, 'posts')); // Create a reference to the new post
@@ -40,6 +41,7 @@ function TextPostForm() {
     <SafeAreaView style={styles.container}>
       <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
         <View style={styles.container}>
+        <Button onPress={onClose}></Button>
           <Text style={styles.title}>Create your post!</Text>
           <TextInput
             placeholder="Post Title"
@@ -65,7 +67,7 @@ function TextPostForm() {
       </TouchableWithoutFeedback>
       <View>
         <View>
-        <Button onPress={addNewPost}> Create Post </Button>
+        <Button onPress={handleAddNewPost}> Create Post </Button>
         </View>
         {/* <View style={styles.button}>
           <Button

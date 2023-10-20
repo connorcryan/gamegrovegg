@@ -1,9 +1,8 @@
-import { Modal, StyleSheet, Text, View, TouchableHighlight,SafeAreaView } from 'react-native';
+import { Modal, StyleSheet, Text, View, TouchableHighlight,SafeAreaView, Button } from 'react-native';
 import { Colors } from '../../constants/styles';
 import PostButton from '../../components/ui/PostButton';
 import { useState } from 'react';
 import TextPostForm from '../../components/forms/TextPostForm';
-
 
 function CreatePostScreen() {
 
