@@ -62,7 +62,7 @@ function ImagePostForm({onClose}) {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if(permissionResult.granted === false) {
-        console.log('Permission to access the media library i required');
+        console.log('Permission to access the media library is required');
         return;
     }
 

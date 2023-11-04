@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, SafeAreaView, Dimensions, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, SafeAreaView, Dimensions, ScrollView, TouchableOpacity, Image } from "react-native";
 import { useNavigation } from '@react-navigation/native';
 import { db } from '../../firebase-config';
 import { onValue, ref } from 'firebase/database';
@@ -45,10 +45,13 @@ function PostDisplay() {
               key={key}
               onPress={() => handlePostPress(posts[key])}
             >
-              <View>
+              <View style={styles.textContainer}>
                 <Text style={styles.title}>{posts[key].title}</Text>
                 <Text style={styles.party}>{posts[key].party}</Text>
               </View>
+              {posts[key].image && (
+                <Image source={{ uri: posts[key].image }} style={styles.postImage} />
+              )}
               <Text style={styles.text}>{posts[key].text}</Text>
             </TouchableOpacity>
           ))
@@ -65,10 +68,10 @@ export default PostDisplay;
 const styles = StyleSheet.create({
   containerWrapper: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   scrollContent: {
-    width: width, 
+    width: width,
     padding: 10,
     backgroundColor: Colors.primary100,
   },
@@ -78,32 +81,47 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary50,
     padding: 10,
     elevation: 2,
-    shadowColor: 'black',
+    shadowColor: "black",
     shadowOffset: { width: 1, height: 1 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
+    alignItems: 'flex-start', // Align items to the top
+    justifyContent: 'space-between',
+    
   },
-    title: {
-      fontSize: 20,
-      fontWeight: 'bold',
-      paddingHorizontal: 5,
-      paddingTop: 3,
-      paddingBottom: 1,
-      color: Colors.primary700,
-    },
-    party: {
-      fontSize: 14,
-      //fontWeight: 'bold',
-      paddingHorizontal: 5,
-      //paddingTop: 5,
-      //paddingBottom: 5,
-      color: Colors.primary700,
-    },
-    text: {
-      fontSize: 16,
-      paddingHorizontal: 5,
-      paddingTop: 5,
-      paddingBottom: 5,
-      color: Colors.primary800,
+  textContainer: {
+    flex: 1,
+    maxWidth: width - 100,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: "bold",
+    paddingHorizontal: 5,
+    paddingTop: 3,
+    paddingBottom: 1,
+    color: Colors.primary700,
+  },
+  party: {
+    fontSize: 14,
+    //fontWeight: 'bold',
+    paddingHorizontal: 5,
+    //paddingTop: 5,
+    //paddingBottom: 5,
+    color: Colors.primary700,
+  },
+  text: {
+    fontSize: 16,
+    paddingHorizontal: 5,
+    paddingTop: 5,
+    paddingBottom: 5,
+    color: Colors.primary800,
+  },
+  postImage: {
+    width: 70,
+    height: 70,
+    borderRadius: 6,
+    position: 'absolute',
+    top: 10,
+    right: 10,
   },
 });
