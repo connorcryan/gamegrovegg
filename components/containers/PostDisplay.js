@@ -14,7 +14,9 @@ function TextPostDisplay() {
   const [posts, setPosts] = useState({});
 
   const handlePostPress = (post) => {
-    nav.navigate('PostDetail', { post });
+    nav.navigate('PostDetail', { 
+      post,
+    title: post.party });
   };
 
   useEffect(() => {
