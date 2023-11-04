@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, SafeAreaView, Dimensions, ScrollView } from "react-native";
+import { View, Text, SafeAreaView, Dimensions, ScrollView, TouchableOpacity } from "react-native";
+import { useNavigation } from '@react-navigation/native';
 import { db } from '../../firebase-config';
 import { onValue, ref } from 'firebase/database';
 import { StyleSheet } from "react-native";
@@ -8,7 +9,13 @@ import { Colors } from "../../constants/styles";
 const { width } = Dimensions.get("screen");
 
 function TextPostDisplay() {
+
+  const nav = useNavigation();
   const [posts, setPosts] = useState({});
+
+  const handlePostPress = (post) => {
+    nav.navigate('PostDetail', { post });
+  };
 
   useEffect(() => {
     const unsubscribe = onValue(ref(db, 'posts'), (querySnapShot) => {
@@ -31,10 +38,17 @@ function TextPostDisplay() {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {Object.keys(posts).length > 0 ? (
           Object.keys(posts).map((key) => (
-            <View style={styles.postContainer} key={key}>
-              <Text style={styles.title}>{posts[key].title}</Text>
+            <TouchableOpacity
+              style={styles.postContainer}
+              key={key}
+              onPress={() => handlePostPress(posts[key])}
+            >
+              <View>
+                <Text style={styles.title}>{posts[key].title}</Text>
+                <Text style={styles.party}>{posts[key].party}</Text>
+              </View>
               <Text style={styles.text}>{posts[key].text}</Text>
-            </View>
+            </TouchableOpacity>
           ))
         ) : (
           <Text>No posts created...</Text>
@@ -71,8 +85,16 @@ const styles = StyleSheet.create({
       fontSize: 20,
       fontWeight: 'bold',
       paddingHorizontal: 5,
-      paddingTop: 5,
-      paddingBottom: 5,
+      paddingTop: 3,
+      paddingBottom: 1,
+      color: Colors.primary700,
+    },
+    party: {
+      fontSize: 14,
+      //fontWeight: 'bold',
+      paddingHorizontal: 5,
+      //paddingTop: 5,
+      //paddingBottom: 5,
       color: Colors.primary700,
     },
     text: {

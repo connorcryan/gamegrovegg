@@ -1,5 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StatusBar } from 'expo-status-bar';
@@ -18,6 +19,8 @@ import CreatePostScreen from './screens/tabs/CreatePostScreen';
 import ChatScreen from './screens/tabs/ChatScreen';
 import ProfileScreen from './screens/tabs/ProfileScreen';
 import IconButton from './components/ui/IconButton';
+import TextPostDisplay from './components/containers/PostDisplay';
+import PostDetailScreen from './components/containers/PostDetail';
 
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
@@ -55,6 +58,8 @@ function AuthenticatedStack() {
         }}
         />
       <Stack.Screen name="Welcome" component={WelcomeScreen} />
+      <Stack.Screen name="TextPostDisplay" component={TextPostDisplay} />
+      <Stack.Screen name="PostDetail" component={PostDetailScreen} />
     </Stack.Navigator>
   );
 }

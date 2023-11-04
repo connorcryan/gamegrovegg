@@ -9,15 +9,16 @@ function TextPostForm({onClose}) {
   
   const [presentPostTitle, setPresentPostTitle] = useState("");
   const [presentPostText, setPresentPostText] = useState("");
+  const [presentPostParty, setPresentPostParty] = useState("");
 
   const handleAddNewPost = () => {
-    if (presentPostTitle.trim() !== '' && presentPostText.trim() !== '') {
-      // Both fields are not empty, proceed with adding the post
-      addNewPost({ title: presentPostTitle, text: presentPostText });
+    if (presentPostTitle.trim() !== '' && presentPostText.trim() !== '' && presentPostParty.trim() !== '') {
+      // All fields are not empty, proceed with adding the post
+      addNewPost({ title: presentPostTitle, text: presentPostText, party: presentPostParty });
       // Close the modal
       onClose();
     } else {
-      Alert.alert('Please ensure both input are not empty');
+      Alert.alert('Please ensure all inputs are not empty');
       console.log('THIS IS NOT WOKRING');
     }
   };
@@ -27,9 +28,12 @@ function TextPostForm({onClose}) {
     set(newPostRef, { // Update the new post's data
       title: presentPostTitle,
       text: presentPostText,
+      party: presentPostParty,
+      timestamp: { '.sv': 'timestamp'}
     });
     setPresentPostTitle("");
     setPresentPostText("");
+    setPresentPostParty("");
   }
 
   function removePost() {
@@ -43,6 +47,16 @@ function TextPostForm({onClose}) {
         <View style={styles.container}>
         <Button onPress={onClose}></Button>
           <Text style={styles.title}>Create your post!</Text>
+          <TextInput
+            placeholder="Party"
+            value={presentPostParty}
+            style={[styles.inputTitle, styles.text]}
+            keyboardType="default"
+            multiline={true}
+            onChangeText={(text) => {
+              setPresentPostParty(text);
+            }}
+          />
           <TextInput
             placeholder="Post Title"
             value={presentPostTitle}
@@ -63,6 +77,7 @@ function TextPostForm({onClose}) {
               setPresentPostText(text);
             }}
           />
+          
         </View>
       </TouchableWithoutFeedback>
       <View>
