@@ -8,7 +8,7 @@ import { Colors } from "../../constants/styles";
 
 const { width } = Dimensions.get("screen");
 
-function TextPostDisplay() {
+function PostDisplay() {
 
   const nav = useNavigation();
   const [posts, setPosts] = useState({});
@@ -60,7 +60,7 @@ function TextPostDisplay() {
   );
 }
 
-export default TextPostDisplay;
+export default PostDisplay;
 
 const styles = StyleSheet.create({
   containerWrapper: {

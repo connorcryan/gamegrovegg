@@ -3,9 +3,7 @@ import axios from 'axios';
 import { useContext, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { AuthContext } from '../../components/store/auth-context';
-import TextPostContainer from '../../components/containers/TextPostContainer';
-import TextPostForm from '../../components/forms/TextPostForm';
-import TextPostDisplay from '../../components/containers/PostDisplay';
+import PostDisplay from '../../components/containers/PostDisplay';
 
 function HomeScreen() {
   const [fetchedMesage, setFetchedMessage] = useState("");
@@ -30,7 +28,7 @@ function HomeScreen() {
         {/* <Text style={styles.title}>Welcome!</Text>
         <Text>You authenticated successfully!</Text>
         <Text>{JSON.stringify(fetchedMesage)}</Text> */}
-        <TextPostDisplay/>
+        <PostDisplay/>
       </ScrollView>
     </View>
   );

@@ -3,15 +3,21 @@ import { Colors } from '../../constants/styles';
 import PostButton from '../../components/ui/PostButton';
 import { useState } from 'react';
 import TextPostForm from '../../components/forms/TextPostForm';
+import ImagePostForm from '../../components/forms/ImagePostForm';
 
 function CreatePostScreen() {
 
   const [inputTitle, setInputTitle] = useState("");
   const [inputText, setInputText] = useState("");
-  const [isModalVisible, setModalVisible] = useState(false);
+  const [isTextModalVisible, setTextModalVisible] = useState(false);
+  const [isImageModalVisible, setImageModalVisible] = useState(false);
 
-  const toggleModal = () => {
-    setModalVisible(!isModalVisible);
+  const toggleTextModal = () => {
+    setTextModalVisible(!isTextModalVisible);
+  };
+
+  const toggleImageModal = () => {
+    setImageModalVisible(!isImageModalVisible);
   };
 
   return (
@@ -20,10 +26,10 @@ function CreatePostScreen() {
         <Text style={styles.title}>Create Post</Text>
         <View style={styles.post}>
           <View>
-            <PostButton onPress={toggleModal}>Text Post</PostButton>
+            <PostButton onPress={toggleTextModal}>Text Post</PostButton>
           </View>
           <View>
-            <PostButton>Image Post</PostButton>
+            <PostButton onPress={toggleImageModal}>Image Post</PostButton>
           </View>
           <View>
             <PostButton>Video Post</PostButton>
@@ -38,14 +44,27 @@ function CreatePostScreen() {
         <Modal
           animationType="slide"
           transparent={false}
-          visible={isModalVisible}
+          visible={isTextModalVisible}
         >
           <TextPostForm 
-            onClose={toggleModal} 
+            onClose={toggleTextModal} 
             inputTitle={inputTitle} 
             setInputTitle={setInputTitle} 
             inputText={inputText} 
             setInputText={setInputText}/>
+        </Modal>
+        <Modal
+          animationType="slide"
+          transparent={false}
+          visible={isImageModalVisible}
+          >
+            <ImagePostForm
+              onClose={toggleImageModal} 
+              inputTitle={inputTitle} 
+              setInputTitle={setInputTitle} 
+              inputText={inputText} 
+              setInputText={setInputText}
+              />
         </Modal>
       </View>
       </SafeAreaView>
