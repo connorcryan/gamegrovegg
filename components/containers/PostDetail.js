@@ -1,5 +1,5 @@
-import React, {useEffect} from "react";
-import { View, Text, StyleSheet } from 'react-native';
+import React, {useEffect, useState} from "react";
+import { View, Text, StyleSheet, Image, ScrollView } from 'react-native';
 import { useNavigation } from "@react-navigation/native";
 import { Colors } from "../../constants/styles";
 
@@ -7,18 +7,35 @@ function PostDetailScreen({ route }) {
   const { post, title } = route.params;
   const nav = useNavigation();
 
+  const [imageHeight, setImageHeight] = useState(0);
+
   useEffect(() => {
     nav.setOptions({
       title: title,
     });
   }, [title]);
 
+  useEffect(() => {
+    if (post.image) {
+      Image.getSize(post.image, (width, height) => {
+        // Calculate the aspect ratio to set the image height
+        const aspectRatio = width / height;
+        setImageHeight(500); // Adjust the height as needed based on the aspect ratio
+      });
+    }
+  }, [post.image]);
+
   return (
-    <View style={styles.container}>
-      <Text style = {styles.title}>I am typing a lot of words so that i can see how the title fits, hopefully it fits correctly and doesn't look weird on the screen. {post.title}</Text>
-      <Text style = {styles.text}>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.{post.text}</Text>
-      <Text style = {styles.username}>Username</Text>
-    </View>
+    <ScrollView>
+      <View style={styles.container}>
+        <Text style={styles.title}> {post.title}</Text>
+        {post.image && (
+          <Image source={{ uri: post.image }} style={{ ...styles.postImage, height: imageHeight}} />
+        )}
+        <Text style={styles.text}>{post.text}</Text>
+        <Text style={styles.username}>Username</Text>
+      </View>
+    </ScrollView>
   );
 }
 
@@ -45,6 +62,10 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 5,
     color: Colors.primary700,
+  },
+  postImage: {
+    width: '100%',
+    marginBottom: 10,
   },
   text: {
     fontSize: 18,
