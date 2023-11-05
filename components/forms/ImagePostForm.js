@@ -1,20 +1,23 @@
 import { db } from '../../firebase-config';
 import { ref, push, remove, set } from 'firebase/database';
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useState } from "react";
-import { StyleSheet, TextInput, View, Text, SafeAreaView, TouchableWithoutFeedback, Keyboard, Alert } from "react-native";
+import { StyleSheet, TextInput, View, Text, SafeAreaView, TouchableWithoutFeedback, Keyboard, Alert, Image } from "react-native";
 import { Colors } from "../../constants/styles";
+import * as ImagePicker from 'expo-image-picker';
 import Button from '../ui/Button';
 
-function TextPostForm({onClose}) {
+function ImagePostForm({onClose}) {
   
   const [presentPostTitle, setPresentPostTitle] = useState("");
-  const [presentPostText, setPresentPostText] = useState("");
   const [presentPostParty, setPresentPostParty] = useState("");
+  const [presentPostImage, setPresentPostImage] = useState("");
+  const [presentPostText, setPresentPostText] = useState("");
 
   const handleAddNewPost = () => {
-    if (presentPostTitle.trim() !== '' && presentPostText.trim() !== '' && presentPostParty.trim() !== '') {
+    if (presentPostTitle.trim() !== '' && presentPostText.trim() !== '' && presentPostParty.trim() !== '' && presentPostImage.trim() !== '') {
       // All fields are not empty, proceed with adding the post
-      addNewPost({ title: presentPostTitle, text: presentPostText, party: presentPostParty });
+      addNewPost({ title: presentPostTitle, text: presentPostText, party: presentPostParty, image: presentPostImage });
       // Close the modal
       onClose();
     } else {
@@ -23,17 +26,54 @@ function TextPostForm({onClose}) {
     }
   };
 
-  function addNewPost() {
+  async function addNewPost() {
     const newPostRef = push(ref(db, 'posts')); // Create a reference to the new post
-    set(newPostRef, { // Update the new post's data
-      title: presentPostTitle,
-      text: presentPostText,
-      party: presentPostParty,
-      timestamp: { '.sv': 'timestamp'}
-    });
-    setPresentPostTitle("");
-    setPresentPostText("");
-    setPresentPostParty("");
+    const imageFileName = `post_${Date.now()}.jpg`; //unique file name for the image 
+
+    //upload the image to firebase storage
+    const storage = getStorage();
+    const imageRef = storageRef(storage, imageFileName);
+
+    //upload the image file
+    try{
+        const snapshot = await uploadBytes(imageRef, presentPostImage);
+        const imageUrl = await getDownloadURL(imageRef);
+
+        set(newPostRef, { // Update the new post's data
+            title: presentPostTitle,
+            text: presentPostText,
+            party: presentPostParty,
+            image: presentPostImage,
+            timestamp: { '.sv': 'timestamp'}
+          });
+
+        setPresentPostTitle("");
+        setPresentPostText("");
+        setPresentPostParty("");
+        setPresentPostImage("");
+
+        onClose();
+    } catch (error) {
+        console.error('Error uploading image', error);
+    }
+  }
+
+  const handleImagePicker = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if(permissionResult.granted === false) {
+        console.log('Permission to access the media library is required');
+        return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync();
+
+    if (!result.canceled) {
+        if (result.assets && result.assets.length > 0) {
+            const selectedAsset = result.assets[0];
+            setPresentPostImage(selectedAsset.uri);
+        }
+    }
   }
 
   function removePost() {
@@ -67,6 +107,7 @@ function TextPostForm({onClose}) {
               setPresentPostTitle(text);
             }}
           />
+        
           <TextInput
             placeholder="Post content..."
             value={presentPostText}
@@ -77,6 +118,10 @@ function TextPostForm({onClose}) {
               setPresentPostText(text);
             }}
           />
+          {presentPostImage ? (
+            <Image source={{ uri: presentPostImage }} style={styles.selectedImage}/>
+          ) : null}
+          <Button title="Select Image" onPress={handleImagePicker} />
           
         </View>
       </TouchableWithoutFeedback>
@@ -97,7 +142,7 @@ function TextPostForm({onClose}) {
   );
 }
 
-export default TextPostForm;
+export default ImagePostForm;
 
 const styles = StyleSheet.create({
     container: {
@@ -148,10 +193,16 @@ const styles = StyleSheet.create({
       flexWrap: 'wrap',
       padding: 10,
       borderRadius: 12,
-      minHeight: 200,
+      minHeight: 50,
       width: "90%",
       marginTop: 15,
       //color: "#000",
+  },
+  selectedImage: {
+    width: 200,
+    height: 200,
+    resizeMode: 'cover',
+    marginVertical: 10,
   },
     button: {
       borderRadius: 12,
