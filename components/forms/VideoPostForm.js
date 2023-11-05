@@ -2,63 +2,73 @@ import { db } from '../../firebase-config';
 import { ref, push, remove, set } from 'firebase/database';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useState } from "react";
-import { StyleSheet, TextInput, View, Text, SafeAreaView, TouchableWithoutFeedback, Keyboard, Alert, Image } from "react-native";
+import { StyleSheet, TextInput, View, Text, SafeAreaView, TouchableWithoutFeedback, Keyboard, Alert } from "react-native";
 import { Colors } from "../../constants/styles";
 import * as ImagePicker from 'expo-image-picker';
+import { Video } from 'expo-av';
 import Button from '../ui/Button';
 
-function ImagePostForm({onClose}) {
+function VideoPostForm({onClose}) {
   
   const [presentPostTitle, setPresentPostTitle] = useState("");
-  const [presentPostParty, setPresentPostParty] = useState("");
-  const [presentPostImage, setPresentPostImage] = useState("");
   const [presentPostText, setPresentPostText] = useState("");
+  const [presentPostParty, setPresentPostParty] = useState("");
+  const [presentPostVideo, setPresentPostVideo] = useState("");
 
   const handleAddNewPost = () => {
-    if (presentPostTitle.trim() !== '' && presentPostText.trim() !== '' && presentPostParty.trim() !== '' && presentPostImage.trim() !== '') {
+    if (
+      presentPostTitle.trim() !== "" &&
+      presentPostText.trim() !== "" &&
+      presentPostParty.trim() !== "" &&
+      presentPostVideo.trim() !== ""
+    ) {
       // All fields are not empty, proceed with adding the post
-      addNewPost({ title: presentPostTitle, text: presentPostText, party: presentPostParty, image: presentPostImage });
+      addNewPost({
+        title: presentPostTitle,
+        text: presentPostText,
+        party: presentPostParty,
+        video: presentPostVideo
+      });
       // Close the modal
       onClose();
     } else {
-      Alert.alert('Please ensure all inputs are not empty');
-      console.log('THIS IS NOT WOKRING');
+      Alert.alert("Please ensure all inputs are not empty");
+      console.log("THIS IS NOT WOKRING");
     }
   };
 
   async function addNewPost() {
     const newPostRef = push(ref(db, 'posts')); // Create a reference to the new post
-    const imageFileName = `post_${Date.now()}.jpg`; //unique file name for the image 
+    const videoFileName = `post_${Date.now()}.mp4`;
 
     //upload the image to firebase storage
     const storage = getStorage();
-    const imageRef = storageRef(storage, imageFileName);
+    const videoRef = storageRef(storage, videoFileName);
 
-    //upload the image file
-    try{
-        const snapshot = await uploadBytes(imageRef, presentPostImage);
-        const imageUrl = await getDownloadURL(imageRef);
+    try {
+
+        const snapshot = await uploadBytes(videoRef, presentPostVideo);
+        const videoUrl = await getDownloadURL(videoRef);
 
         set(newPostRef, { // Update the new post's data
             title: presentPostTitle,
             text: presentPostText,
             party: presentPostParty,
-            image: presentPostImage,
+            video: presentPostVideo,
             timestamp: { '.sv': 'timestamp'}
           });
+          setPresentPostTitle("");
+          setPresentPostText("");
+          setPresentPostParty("");
+          setPresentPostVideo("");
 
-        setPresentPostTitle("");
-        setPresentPostText("");
-        setPresentPostParty("");
-        setPresentPostImage("");
-
-        onClose();
-    } catch (error) {
-        console.error('Error uploading image', error);
+          onClose();
+    }catch(error) {
+        console.error('Error uploading video', error);
     }
   }
 
-  const handleImagePicker = async () => {
+  const handleVideoPicker = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if(permissionResult.granted === false) {
@@ -66,12 +76,15 @@ function ImagePostForm({onClose}) {
         return;
     }
 
-    const result = await ImagePicker.launchImageLibraryAsync();
+    const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+    }
+    );
 
     if (!result.canceled) {
         if (result.assets && result.assets.length > 0) {
             const selectedAsset = result.assets[0];
-            setPresentPostImage(selectedAsset.uri);
+            setPresentPostVideo(selectedAsset.uri);
         }
     }
   }
@@ -107,9 +120,8 @@ function ImagePostForm({onClose}) {
               setPresentPostTitle(text);
             }}
           />
-        
           <TextInput
-            placeholder="Post content..."
+            placeholder="Text content..."
             value={presentPostText}
             style={[styles.inputText, styles.text]}
             keyboardType="default"
@@ -118,10 +130,19 @@ function ImagePostForm({onClose}) {
               setPresentPostText(text);
             }}
           />
-          {presentPostImage ? (
-            <Image source={{ uri: presentPostImage }} style={styles.selectedImage}/>
+          {presentPostVideo ? (
+            <Video
+              source={{ uri: presentPostVideo }} // Make sure presentPostVideo is a valid video URI
+              rate={1.0}
+              volume={1.0}
+              isMuted={false}
+              resizeMode="cover"
+              shouldPlay={true}
+              isLooping={false}
+              style={styles.selectedVideo}
+            />
           ) : null}
-          <Button title="Select Image" onPress={handleImagePicker} />         
+          <Button title="Select Video" onPress={handleVideoPicker} />
         </View>
       </TouchableWithoutFeedback>
       <View>
@@ -141,7 +162,7 @@ function ImagePostForm({onClose}) {
   );
 }
 
-export default ImagePostForm;
+export default VideoPostForm;
 
 const styles = StyleSheet.create({
     container: {
@@ -192,21 +213,21 @@ const styles = StyleSheet.create({
       flexWrap: 'wrap',
       padding: 10,
       borderRadius: 12,
-      minHeight: 50,
+      //minHeight: 200,
       width: "90%",
       marginTop: 15,
       //color: "#000",
-  },
-  selectedImage: {
-    width: 200,
-    height: 200,
-    resizeMode: 'cover',
-    marginVertical: 10,
   },
     button: {
       borderRadius: 12,
       padding: 5,
       marginTop: 10,
       marginBottom: 30,
-    }
+    },
+    selectedVideo: {
+        width: 200,
+        height: 200,
+        resizeMode: 'cover',
+        marginVertical: 10,
+      },
 });

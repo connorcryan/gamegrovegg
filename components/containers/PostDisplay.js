@@ -50,7 +50,10 @@ function PostDisplay() {
                 <Text style={styles.party}>{posts[key].party}</Text>
               </View>
               {posts[key].image && (
-                <Image source={{ uri: posts[key].image }} style={styles.postImage} />
+                <Image
+                  source={{ uri: posts[key].image }}
+                  style={styles.postImage}
+                />
               )}
               <Text style={styles.text}>{posts[key].text}</Text>
             </TouchableOpacity>

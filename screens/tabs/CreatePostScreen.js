@@ -4,6 +4,7 @@ import PostButton from '../../components/ui/PostButton';
 import { useState } from 'react';
 import TextPostForm from '../../components/forms/TextPostForm';
 import ImagePostForm from '../../components/forms/ImagePostForm';
+import VideoPostForm from '../../components/forms/VideoPostForm';
 
 function CreatePostScreen() {
 
@@ -11,6 +12,7 @@ function CreatePostScreen() {
   const [inputText, setInputText] = useState("");
   const [isTextModalVisible, setTextModalVisible] = useState(false);
   const [isImageModalVisible, setImageModalVisible] = useState(false);
+  const [isVideoModalVisible, setVideoModalVisible] = useState(false);
 
   const toggleTextModal = () => {
     setTextModalVisible(!isTextModalVisible);
@@ -19,6 +21,10 @@ function CreatePostScreen() {
   const toggleImageModal = () => {
     setImageModalVisible(!isImageModalVisible);
   };
+
+  const toggleVideoModal = () => {
+    setVideoModalVisible(!isVideoModalVisible);
+  }
 
   return (
     <View style={styles.rootContainer}>
@@ -32,7 +38,7 @@ function CreatePostScreen() {
             <PostButton onPress={toggleImageModal}>Image Post</PostButton>
           </View>
           <View>
-            <PostButton>Video Post</PostButton>
+            <PostButton onPress={toggleVideoModal}>Video Post</PostButton>
           </View>
           <View>
             <PostButton>Link</PostButton>
@@ -60,6 +66,19 @@ function CreatePostScreen() {
           >
             <ImagePostForm
               onClose={toggleImageModal} 
+              inputTitle={inputTitle} 
+              setInputTitle={setInputTitle} 
+              inputText={inputText} 
+              setInputText={setInputText}
+              />
+        </Modal>
+        <Modal
+          animationType="slide"
+          transparent={false}
+          visible={isVideoModalVisible}
+          >
+            <VideoPostForm
+              onClose={toggleVideoModal} 
               inputTitle={inputTitle} 
               setInputTitle={setInputTitle} 
               inputText={inputText} 
