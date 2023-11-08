@@ -40,7 +40,7 @@ function ImagePostForm({onClose}) {
         const response = await fetch(presentPostImage);
         const blob = await response.blob();
 
-        await uploadBytes(imageRef, blob);
+        const snapshot = await uploadBytes(imageRef, presentPostImage);
         const imageUrl = await getDownloadURL(imageRef);
 
         set(newPostRef, { // Update the new post's data

@@ -49,13 +49,13 @@ function PostDisplay() {
                 <Text style={styles.title}>{posts[key].title}</Text>
                 <Text style={styles.party}>{posts[key].party}</Text>
               </View>
-              {posts[key].image && (
+              {posts[key].image && posts[key].image.trim() !== '' ? (
                 <Image
                   source={{ uri: posts[key].image }}
                   style={styles.postImage}
                   onError={(error) => console.log('Image load error:', error)}
                 />
-              )}
+              ) : null}
               <Text style={styles.text}>{posts[key].text}</Text>
             </TouchableOpacity>
           ))

@@ -13,14 +13,14 @@ function VideoPostForm({onClose}) {
   const [presentPostTitle, setPresentPostTitle] = useState("");
   const [presentPostText, setPresentPostText] = useState("");
   const [presentPostParty, setPresentPostParty] = useState("");
-  const [presentPostVideo, setPresentPostVideo] = useState("");
+  const [presentPostVideo, setPresentPostVideo] = useState(null);
 
   const handleAddNewPost = () => {
     if (
       presentPostTitle.trim() !== "" &&
       presentPostText.trim() !== "" &&
       presentPostParty.trim() !== "" &&
-      presentPostVideo.trim() !== ""
+      presentPostVideo
     ) {
       // All fields are not empty, proceed with adding the post
       addNewPost({
@@ -38,6 +38,7 @@ function VideoPostForm({onClose}) {
   };
 
   async function addNewPost() {
+    console.log("addNewPost function is called");
     const newPostRef = push(ref(db, 'posts')); // Create a reference to the new post
     const videoFileName = `post_${Date.now()}.mp4`;
 
@@ -46,25 +47,34 @@ function VideoPostForm({onClose}) {
     const videoRef = storageRef(storage, videoFileName);
 
     try {
+        const response = await fetch(presentPostVideo);
+        console.log("Video fetched");
+        const blob = await response.blob();
+        console.log("Blob created");
 
-        const snapshot = await uploadBytes(videoRef, presentPostVideo);
-        const videoUrl = await getDownloadURL(videoRef);
+        await uploadBytes(videoRef, blob, {contentType: 'video/mp4'});
+        //const videoUrl = await getDownloadURL(videoRef);
 
+        // Get the download URL with the correct content type
+        const metadata = await videoRef.getMetadata();
+        const videoUrl = metadata.downloadURLs[0];
+        
         set(newPostRef, { // Update the new post's data
             title: presentPostTitle,
             text: presentPostText,
             party: presentPostParty,
-            video: presentPostVideo,
+            video: videoUrl,
             timestamp: { '.sv': 'timestamp'}
           });
           setPresentPostTitle("");
           setPresentPostText("");
           setPresentPostParty("");
-          setPresentPostVideo("");
+          setPresentPostVideo(null);
 
           onClose();
     }catch(error) {
         console.error('Error uploading video', error);
+        console.log("Error occurred in addNewPost function");
     }
   }
 

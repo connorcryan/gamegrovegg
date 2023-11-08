@@ -5,6 +5,7 @@ import { useState } from 'react';
 import TextPostForm from '../../components/forms/TextPostForm';
 import ImagePostForm from '../../components/forms/ImagePostForm';
 import VideoPostForm from '../../components/forms/VideoPostForm';
+import CreatePartyForm from '../../components/forms/PartyCreateForm';
 
 function CreatePostScreen() {
 
@@ -13,6 +14,7 @@ function CreatePostScreen() {
   const [isTextModalVisible, setTextModalVisible] = useState(false);
   const [isImageModalVisible, setImageModalVisible] = useState(false);
   const [isVideoModalVisible, setVideoModalVisible] = useState(false);
+  const [isPartyModalVisible, setPartyModalVisible] = useState(false);
 
   const toggleTextModal = () => {
     setTextModalVisible(!isTextModalVisible);
@@ -24,6 +26,10 @@ function CreatePostScreen() {
 
   const toggleVideoModal = () => {
     setVideoModalVisible(!isVideoModalVisible);
+  }
+
+  const togglePartyModal = () => {
+    setPartyModalVisible(!isPartyModalVisible);
   }
 
   return (
@@ -42,6 +48,9 @@ function CreatePostScreen() {
           </View>
           <View>
             <PostButton>Link</PostButton>
+          </View>
+          <View>
+            <PostButton onPress={togglePartyModal}>Create Party</PostButton>
           </View>
         </View>
       </View>
@@ -79,6 +88,19 @@ function CreatePostScreen() {
           >
             <VideoPostForm
               onClose={toggleVideoModal} 
+              inputTitle={inputTitle} 
+              setInputTitle={setInputTitle} 
+              inputText={inputText} 
+              setInputText={setInputText}
+              />
+        </Modal>
+        <Modal
+          animationType="slide"
+          transparent={false}
+          visible={isPartyModalVisible}
+          >
+            <CreatePartyForm
+              onClose={togglePartyModal} 
               inputTitle={inputTitle} 
               setInputTitle={setInputTitle} 
               inputText={inputText} 
