@@ -1,49 +1,65 @@
 import { db } from '../../firebase-config';
-import { ref, push, remove, set } from 'firebase/database';
+import { ref, push, set, get, query, orderByChild, equalTo } from 'firebase/database';
 import { useState } from "react";
 import { StyleSheet, TextInput, View, Text, SafeAreaView, TouchableWithoutFeedback, Keyboard, Alert } from "react-native";
 import { Colors } from "../../constants/styles";
 import Button from '../ui/Button';
 
-function CreatePartyForm({onClose}) {
-  
+function CreatePartyForm({ onClose }) {
+
   const [presentPartyTitle, setPresentPartyTitle] = useState("");
   const [presentPartyBio, setPresentPartyBio] = useState("");
 
-  const handleAddNewPost = () => {
+  const handleAddNewPost = async () => {
     if (presentPartyTitle.trim() !== '' && presentPartyBio.trim() !== '') {
-      // All fields are not empty, proceed with adding the post
-      addNewPost({ party: presentPartyTitle, partyBio: presentPartyBio });
-      // Close the modal
-      onClose();
+      try {
+        // Check if a party with the same title already exists
+        const partyExists = await checkPartyExists(presentPartyTitle);
+        if (!partyExists) {
+          // If the party doesn't exist, proceed with adding the post
+          addNewPost({ party: presentPartyTitle, partyBio: presentPartyBio });
+          // Close the modal
+          onClose();
+        } else {
+          Alert.alert('Party already exists with the same title');
+        }
+      } catch (error) {
+        console.error("Error while adding a new party:", error);
+        Alert.alert('Error while adding a new party. Please try again later.');
+      }
     } else {
       Alert.alert('Please ensure all inputs are not empty');
-      console.log('THIS IS NOT WOKRING');
     }
-  };
-  
+  }
+
+  async function checkPartyExists(partyTitle) {
+    try {
+      const partyRef = ref(db, 'parties');
+      const partyQuery = query(partyRef, orderByChild('party'), equalTo(partyTitle));
+      const snapshot = await get(partyQuery);
+      return snapshot.exists();
+    } catch (error) {
+      console.error("Error while checking party existence:", error);
+      throw error; // Rethrow the error to handle it in the caller function
+    }
+  }
 
   function addNewPost() {
     const newPostRef = push(ref(db, 'parties')); // Create a reference to the new post
     set(newPostRef, { // Update the new post's data
       party: presentPartyTitle,
       partyBio: presentPartyBio,
-      timestamp: { '.sv': 'timestamp'}
+      timestamp: { '.sv': 'timestamp' }
     });
     setPresentPartyTitle("");
     setPresentPartyBio("");
-  }
-
-  function removePost() {
-    // This is a remove function to be implemented later 
-    remove(ref(db, `parties/${postKey}`));
   }
 
   return (
     <SafeAreaView style={styles.container}>
       <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
         <View style={styles.container}>
-        <Button onPress={onClose}></Button>
+          <Button onPress={onClose}></Button>
           <Text style={styles.title}>Create your post!</Text>
           <TextInput
             placeholder="Party Title"
@@ -65,12 +81,11 @@ function CreatePartyForm({onClose}) {
               setPresentPartyBio(text);
             }}
           />
-          
         </View>
       </TouchableWithoutFeedback>
       <View>
         <View>
-        <Button onPress={handleAddNewPost}> Create Party </Button>
+          <Button onPress={handleAddNewPost}> Create Party </Button>
         </View>
       </View>
     </SafeAreaView>
