@@ -53,6 +53,7 @@ function PostDisplay() {
                 <Image
                   source={{ uri: posts[key].image }}
                   style={styles.postImage}
+                  onError={(error) => console.log('Image load error:', error)}
                 />
               )}
               <Text style={styles.text}>{posts[key].text}</Text>

@@ -36,14 +36,18 @@ function ImagePostForm({onClose}) {
 
     //upload the image file
     try{
-        const snapshot = await uploadBytes(imageRef, presentPostImage);
+
+        const response = await fetch(presentPostImage);
+        const blob = await response.blob();
+
+        await uploadBytes(imageRef, blob);
         const imageUrl = await getDownloadURL(imageRef);
 
         set(newPostRef, { // Update the new post's data
             title: presentPostTitle,
             text: presentPostText,
             party: presentPostParty,
-            image: presentPostImage,
+            image: imageUrl,
             timestamp: { '.sv': 'timestamp'}
           });
 
@@ -72,6 +76,7 @@ function ImagePostForm({onClose}) {
         if (result.assets && result.assets.length > 0) {
             const selectedAsset = result.assets[0];
             setPresentPostImage(selectedAsset.uri);
+            //console.log("Selected Image URI: ", selectedAsset.uri);
         }
     }
   }
