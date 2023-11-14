@@ -9,6 +9,7 @@ const { width } = Dimensions.get("screen");
 
 function TextPostDisplay() {
   const [posts, setPosts] = useState({});
+  const [parties, setParties] = useState([]);
   const [searchKeyword, setSearchKeyword] = useState(""); // State to store the search keyword
 
   useEffect(() => {
@@ -21,9 +22,19 @@ function TextPostDisplay() {
       }
     });
 
+    const unsubscribeParties = onValue(ref(db, 'parties'), (querySnapShot) => {
+      if (querySnapShot.exists()) {
+        let data = querySnapShot.val() || {};
+        setParties(data);
+      } else {
+        console.log('⛔️ Object is falsy');
+      }
+    });
+
     return () => {
       // Cleanup the listener when the component unmounts
       unsubscribe();
+      unsubscribeParties();
     };
   }, []);
 
