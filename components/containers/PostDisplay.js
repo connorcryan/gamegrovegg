@@ -5,6 +5,7 @@ import { db } from '../../firebase-config';
 import { onValue, ref } from 'firebase/database';
 import { StyleSheet } from "react-native";
 import { Colors } from "../../constants/styles";
+import { Video } from 'expo-av';
 
 const { width } = Dimensions.get("screen");
 
@@ -54,6 +55,16 @@ function PostDisplay() {
                   source={{ uri: posts[key].image }}
                   style={styles.postImage}
                   onError={(error) => console.log('Image load error:', error)}
+                />
+              ) : null}
+              {posts[key].video && posts[key].video.trim() !== '' ? (
+                <Video
+                  source={{ uri: posts[key].video }}
+                  style={styles.postVideo}
+                  isLooping={false} // set to true if you want the video to loop
+                  shouldPlay={false}
+                  //useNativeControls
+                  resizeMode="cover"
                 />
               ) : null}
               <Text style={styles.text}>{posts[key].text}</Text>
@@ -121,6 +132,14 @@ const styles = StyleSheet.create({
     color: Colors.primary800,
   },
   postImage: {
+    width: 70,
+    height: 70,
+    borderRadius: 6,
+    position: 'absolute',
+    top: 10,
+    right: 10,
+  },
+  postVideo: {
     width: 70,
     height: 70,
     borderRadius: 6,

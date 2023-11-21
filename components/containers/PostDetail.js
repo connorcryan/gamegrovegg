@@ -2,6 +2,8 @@ import React, {useEffect, useState} from "react";
 import { View, Text, StyleSheet, Image, ScrollView } from 'react-native';
 import { useNavigation } from "@react-navigation/native";
 import { Colors } from "../../constants/styles";
+import { Video } from 'expo-av';
+
 
 function PostDetailScreen({ route }) {
   const { post, title } = route.params;
@@ -31,6 +33,16 @@ function PostDetailScreen({ route }) {
         <Text style={styles.title}> {post.title}</Text>
         {post.image && (
           <Image source={{ uri: post.image }} style={{ ...styles.postImage, height: imageHeight}} />
+        )}
+        {post.video && post.video.trim() !== '' && (
+          <Video
+            source={{ uri: post.video }}
+            style={styles.postVideo}
+            isLooping={false}
+            shouldPlay={false}
+            useNativeControls
+            resizeMode="cover"
+          />
         )}
         <Text style={styles.text}>{post.text}</Text>
         <Text style={styles.username}>{post.username}</Text>
@@ -66,6 +78,12 @@ const styles = StyleSheet.create({
   postImage: {
     width: '100%',
     marginBottom: 10,
+  },
+  postVideo: {
+    width: '100%',
+    height: 200,
+    borderRadius: 8,
+    marginBottom: 8,
   },
   text: {
     fontSize: 18,
