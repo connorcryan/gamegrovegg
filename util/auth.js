@@ -34,25 +34,33 @@ async function authenticate(mode, email, password) {
 export async function createUser(username, email, password) {
    const authData = await authenticate('signUp', email, password);
    const { token, uid } = authData;
+  
+   const userData = { uid, username };
+   await storeUserDataInDatabase(uid, { uid, userData});
 
-   await storeUserDataInDatabase(uid, { uid, username });
-
-   return token;
+   return { token, userData };
 }
 
 async function storeUserDataInDatabase(uid, userData) {
-    const db = getDatabase();
+  const db = getDatabase();
 
-    try {
-        const userRef = ref(db, `users/${uid}`);
-        await set(userRef, {
-            uid: uid,
-            username: userData.username,
-        });
-        console.log("User data stored in the database!");
-    } catch (error) {
-        console.error("Error storing user data: ", error);
-    }
+  try {
+      const userRef = ref(db, `users/${uid}`);
+      
+      // Check if userData is not undefined before storing
+      if (userData && userData.username) {
+          await set(userRef, {
+              uid: uid,
+              username: userData.username,
+              // Add other user data as needed
+          });
+          console.log("User data stored in the database!");
+      } else {
+          console.warn("userData is undefined, not storing in the database.");
+      }
+  } catch (error) {
+      console.error("Error storing user data: ", error);
+  }
 }
 
 export function login(email, password) {

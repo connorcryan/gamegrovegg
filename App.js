@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react';
+import React,{ useContext, useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -74,9 +74,17 @@ function Navigation() {
   );
 }
 
+function ProfileScreenWrapper() {
+  const authCtx = useContext(AuthContext);
+
+  return <ProfileScreen username={authCtx.userData?.username} />;
+  
+}
+
 function ScreensOverview(){
 
 const authCtx = useContext(AuthContext);
+console.log("userData in ScreensOverview:", authCtx.userData);
 
   return (
     <BottomTabs.Navigator
@@ -134,7 +142,7 @@ const authCtx = useContext(AuthContext);
       />
       <BottomTabs.Screen 
         name="Profile"
-        component={ProfileScreen}
+        component={ProfileScreenWrapper}
         options={{
           title: "Profile",
           tabBarLabel: "Profile",
@@ -165,6 +173,18 @@ function Root() {
     }  
     fetchToken();
 }, []);
+
+useEffect(() => {
+  // Additional useEffect for checking AsyncStorage values
+  async function checkAsyncStorage() {
+    const storedToken = await AsyncStorage.getItem('token');
+    const storedUserData = await AsyncStorage.getItem('userData');
+    console.log("Stored token:", storedToken);
+    console.log("Stored userData:", storedUserData);
+  }
+
+  checkAsyncStorage();
+}, []); // Empty dependency array to run only once after the initial render
 
 if (isTryingLogin) {
   return <AppLoading />;

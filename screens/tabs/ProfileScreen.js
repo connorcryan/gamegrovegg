@@ -1,10 +1,12 @@
+import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-function ProfileScreen() {
+function ProfileScreen({username}) {
+  console.log("Received username prop:", username);
   return (
     <View style={styles.rootContainer}>
-      <Text style={styles.title}>Welcome!</Text>
-      <Text>This is th eprofile screen!</Text>
+      <Text style={styles.title}>Welcome, {username}!</Text>
+      <Text>This is the profile screen!</Text>
     </View>
   );
 }
