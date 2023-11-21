@@ -33,7 +33,7 @@ function PostDetailScreen({ route }) {
           <Image source={{ uri: post.image }} style={{ ...styles.postImage, height: imageHeight}} />
         )}
         <Text style={styles.text}>{post.text}</Text>
-        <Text style={styles.username}>Username</Text>
+        <Text style={styles.username}>{post.username}</Text>
       </View>
     </ScrollView>
   );

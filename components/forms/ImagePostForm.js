@@ -1,7 +1,8 @@
 import { db } from '../../firebase-config';
 import { ref, push, remove, set } from 'firebase/database';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { useState } from "react";
+import { useState, useContext } from "react";
+import { AuthContext } from '../store/auth-context';
 import { StyleSheet, TextInput, View, Text, SafeAreaView, TouchableWithoutFeedback, Keyboard, Alert, Image } from "react-native";
 import { Colors } from "../../constants/styles";
 import * as ImagePicker from 'expo-image-picker';
@@ -13,6 +14,8 @@ function ImagePostForm({onClose}) {
   const [presentPostParty, setPresentPostParty] = useState("");
   const [presentPostImage, setPresentPostImage] = useState("");
   const [presentPostText, setPresentPostText] = useState("");
+
+  const authCtx = useContext(AuthContext);
 
   const handleAddNewPost = () => {
     if (presentPostTitle.trim() !== '' && presentPostText.trim() !== '' && presentPostParty.trim() !== '' && presentPostImage.trim() !== '') {
@@ -26,39 +29,54 @@ function ImagePostForm({onClose}) {
     }
   };
 
-  async function addNewPost() {
-    const newPostRef = push(ref(db, 'posts')); // Create a reference to the new post
-    const imageFileName = `post_${Date.now()}.jpg`; //unique file name for the image 
+  async function addNewPost(postData) {
+    const userData = authCtx.userData;
 
-    //upload the image to firebase storage
-    const storage = getStorage();
-    const imageRef = storageRef(storage, imageFileName);
+    if (userData && userData.username) {
+      // Include the username in the post data
+      postData.username = userData.username;
 
-    //upload the image file
-    try{
+      const newPostRef = push(ref(db, 'posts')); // Create a reference to the new post
+      const imageFileName = `post_${Date.now()}.jpg`; // unique file name for the image 
 
+      // upload the image to firebase storage
+      const storage = getStorage();
+      const imageRef = storageRef(storage, imageFileName);
+
+      // upload the image file
+      try {
         const response = await fetch(presentPostImage);
         const blob = await response.blob();
 
-        const snapshot = await uploadBytes(imageRef, presentPostImage);
+        // Set the content type to 'image/jpeg'
+        const metadata = {
+          contentType: 'image/jpeg',
+        };
+
+        const snapshot = await uploadBytes(imageRef, blob, metadata);
         const imageUrl = await getDownloadURL(imageRef);
 
         set(newPostRef, { // Update the new post's data
-            title: presentPostTitle,
-            text: presentPostText,
-            party: presentPostParty,
-            image: imageUrl,
-            timestamp: { '.sv': 'timestamp'}
-          });
+          title: presentPostTitle,
+          text: presentPostText,
+          party: presentPostParty,
+          image: imageUrl,
+          username: userData.username,
+          timestamp: { '.sv': 'timestamp' }
+        });
 
+        // Clear the input fields
         setPresentPostTitle("");
         setPresentPostText("");
         setPresentPostParty("");
         setPresentPostImage("");
 
         onClose();
-    } catch (error) {
+      } catch (error) {
         console.error('Error uploading image', error);
+      }
+    } else {
+      console.warn('User data is not available or does not contain a username.');
     }
   }
 

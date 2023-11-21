@@ -1,15 +1,18 @@
 import { db } from '../../firebase-config';
 import { ref, push, remove, set } from 'firebase/database';
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { StyleSheet, TextInput, View, Text, SafeAreaView, TouchableWithoutFeedback, Keyboard, Alert } from "react-native";
 import { Colors } from "../../constants/styles";
 import Button from '../ui/Button';
+import { AuthContext } from '../store/auth-context';
 
 function TextPostForm({onClose}) {
   
   const [presentPostTitle, setPresentPostTitle] = useState("");
   const [presentPostText, setPresentPostText] = useState("");
   const [presentPostParty, setPresentPostParty] = useState("");
+
+  const authCtx = useContext(AuthContext);
 
   const handleAddNewPost = () => {
     if (presentPostTitle.trim() !== '' && presentPostText.trim() !== '' && presentPostParty.trim() !== '') {
@@ -23,17 +26,23 @@ function TextPostForm({onClose}) {
     }
   };
 
-  function addNewPost() {
-    const newPostRef = push(ref(db, 'posts')); // Create a reference to the new post
-    set(newPostRef, { // Update the new post's data
-      title: presentPostTitle,
-      text: presentPostText,
-      party: presentPostParty,
-      timestamp: { '.sv': 'timestamp'}
-    });
-    setPresentPostTitle("");
-    setPresentPostText("");
-    setPresentPostParty("");
+  function addNewPost(postData) {
+    const userData = authCtx.userData;
+    
+    if (userData && userData.username) {
+      // Include the username in the post data
+      postData.username = userData.username;
+      
+      const newPostRef = push(ref(db, 'posts')); // Create a reference to the new post
+      set(newPostRef, { ...postData, timestamp: { '.sv': 'timestamp' } });
+      
+      // Clear the input fields
+      setPresentPostTitle("");
+      setPresentPostText("");
+      setPresentPostParty("");
+    } else {
+      console.warn('User data is not available or does not contain a username.');
+    }
   }
 
   function removePost() {
