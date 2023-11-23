@@ -20,6 +20,7 @@ import ProfileScreen from './screens/tabs/ProfileScreen';
 import IconButton from './components/ui/IconButton';
 import TextPostDisplay from './components/containers/PostDisplay';
 import PostDetailScreen from './components/containers/PostDetail';
+import PartyDetailScreen from './components/containers/PartyDetailScreen';
 
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
@@ -59,6 +60,8 @@ function AuthenticatedStack() {
       <Stack.Screen name="Welcome" component={WelcomeScreen} />
       <Stack.Screen name="TextPostDisplay" component={TextPostDisplay} />
       <Stack.Screen name="PostDetail" component={PostDetailScreen} />
+      <Stack.Screen name="PartyDetailScreen" component={PartyDetailScreen} />
+
     </Stack.Navigator>
   );
 }

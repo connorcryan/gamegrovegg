@@ -20,9 +20,9 @@ function PostDetailScreen({ route }) {
   useEffect(() => {
     if (post.image) {
       Image.getSize(post.image, (width, height) => {
-        // Calculate the aspect ratio to set the image height
+        // calc aspect ratio to get image height
         const aspectRatio = width / height;
-        setImageHeight(500); // Adjust the height as needed based on the aspect ratio
+        setImageHeight(500); // adjust the height as needed
       });
     }
   }, [post.image]);
