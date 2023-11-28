@@ -36,27 +36,39 @@ function TextPostForm({onClose}) {
       try {
         const partyRef = ref(db, `parties/${presentPostParty}`);
         const partySnapshot = await get(partyRef);
-    
+
         if (!partySnapshot.exists()) {
-          console.warn('Selected party does not exist in the database.');
+          console.warn("Selected party does not exist in the database.");
           return;
         }
         const newPostRef = push(ref(db, `parties/${presentPostParty}/posts`));
 
-        const postDataWithUsername = { ...postData, username: userData.username };
-        set(newPostRef, { 
+        const postDataWithUsername = {
+          ...postData,
+          username: userData.username,
+        };
+        set(newPostRef, {
           ...postDataWithUsername,
-          ...postData, 
-          timestamp: { '.sv': 'timestamp' } 
+          ...postData,
+          timestamp: { ".sv": "timestamp" },
         });
-      
-      // Clear the input fields
-      setPresentPostTitle("");
-      setPresentPostText("");
-      setPresentPostParty("");
 
-      onClose();
-    } catch(error) {
+        // Add post to the general Posts node
+        const allPostsRef = ref(db, "posts");
+        const newAllPostRef = push(allPostsRef);
+        set(newAllPostRef, {
+          ...postDataWithUsername,
+          party: presentPostParty,
+          timestamp: { ".sv": "timestamp" },
+        });
+
+        // Clear the input fields
+        setPresentPostTitle("");
+        setPresentPostText("");
+        setPresentPostParty("");
+
+        onClose();
+      } catch(error) {
       console.error('Error adding new post', error);
     }
     }

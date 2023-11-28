@@ -69,6 +69,15 @@ function ImagePostForm({onClose}) {
         image: imageUrl,
         timestamp: { '.sv': 'timestamp' },
       });
+
+      // Add post to the general Posts node
+      const allPostsRef = ref(db, "posts");
+      const newAllPostRef = push(allPostsRef);
+      set(newAllPostRef, {
+        ...postDataWithUsername,
+        image: imageUrl,
+        timestamp: { ".sv": "timestamp" },
+      });
   
       setPresentPostTitle('');
       setPresentPostText('');
