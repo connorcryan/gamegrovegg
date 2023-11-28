@@ -1,5 +1,5 @@
 import { db } from '../../firebase-config';
-import { ref, push, remove, set } from 'firebase/database';
+import { ref, push, remove, set, get } from 'firebase/database';
 import { useState, useContext } from "react";
 import { StyleSheet, TextInput, View, Text, SafeAreaView, TouchableWithoutFeedback, Keyboard, Alert } from "react-native";
 import { Colors } from "../../constants/styles";
@@ -26,22 +26,39 @@ function TextPostForm({onClose}) {
     }
   };
 
-  function addNewPost(postData) {
+  async function addNewPost(postData) {
     const userData = authCtx.userData;
     
     if (userData && userData.username) {
       // Include the username in the post data
       postData.username = userData.username;
       
-      const newPostRef = push(ref(db, 'posts')); // Create a reference to the new post
-      set(newPostRef, { ...postData, timestamp: { '.sv': 'timestamp' } });
+      try {
+        const partyRef = ref(db, `parties/${presentPostParty}`);
+        const partySnapshot = await get(partyRef);
+    
+        if (!partySnapshot.exists()) {
+          console.warn('Selected party does not exist in the database.');
+          return;
+        }
+        const newPostRef = push(ref(db, `parties/${presentPostParty}/posts`));
+
+        const postDataWithUsername = { ...postData, username: userData.username };
+        set(newPostRef, { 
+          ...postDataWithUsername,
+          ...postData, 
+          timestamp: { '.sv': 'timestamp' } 
+        });
       
       // Clear the input fields
       setPresentPostTitle("");
       setPresentPostText("");
       setPresentPostParty("");
-    } else {
-      console.warn('User data is not available or does not contain a username.');
+
+      onClose();
+    } catch(error) {
+      console.error('Error adding new post', error);
+    }
     }
   }
 

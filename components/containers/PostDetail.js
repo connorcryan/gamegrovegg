@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import { View, Text, StyleSheet, Image, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Image, ScrollView, TouchableHighlight } from 'react-native';
 import { useNavigation } from "@react-navigation/native";
 import { Colors } from "../../constants/styles";
 import { Video } from 'expo-av';
@@ -14,8 +14,13 @@ function PostDetailScreen({ route }) {
   useEffect(() => {
     nav.setOptions({
       title: title,
+      headerTitle: () => (
+        <Text style={styles.headerTitle} onPress={() => navigateToPartyDetailScreen()}>
+          {post.party}
+        </Text>
+      ),
     });
-  }, [title]);
+  }, [title, post.party]);
 
   useEffect(() => {
     if (post.image) {
@@ -27,14 +32,21 @@ function PostDetailScreen({ route }) {
     }
   }, [post.image]);
 
+  const navigateToPartyDetailScreen = () => {
+    nav.navigate('PartyDetailScreen', { partyDetails: post });
+  };
+
   return (
     <ScrollView>
       <View style={styles.container}>
         <Text style={styles.title}> {post.title}</Text>
         {post.image && (
-          <Image source={{ uri: post.image }} style={{ ...styles.postImage, height: imageHeight}} />
+          <Image
+            source={{ uri: post.image }}
+            style={{ ...styles.postImage, height: imageHeight }}
+          />
         )}
-        {post.video && post.video.trim() !== '' && (
+        {post.video && post.video.trim() !== "" && (
           <Video
             source={{ uri: post.video }}
             style={styles.postVideo}
@@ -65,6 +77,15 @@ const styles = StyleSheet.create({
     // shadowOffset: { width: 1, height: 1 },
     // shadowOpacity: 0.25,
     // shadowRadius: 4,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 10,
+    paddingHorizontal: 15,
+    paddingTop: 10,
+    paddingBottom: 5,
+    color: Colors.white,
   },
   title: {
     fontSize: 20,

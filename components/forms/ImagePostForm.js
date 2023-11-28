@@ -1,5 +1,5 @@
 import { db } from '../../firebase-config';
-import { ref, push, remove, set } from 'firebase/database';
+import { ref, push, remove, set, get } from 'firebase/database';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useState, useContext } from "react";
 import { AuthContext } from '../store/auth-context';
@@ -31,52 +31,54 @@ function ImagePostForm({onClose}) {
 
   async function addNewPost(postData) {
     const userData = authCtx.userData;
-
-    if (userData && userData.username) {
-      // Include the username in the post data
-      postData.username = userData.username;
-
-      const newPostRef = push(ref(db, 'posts')); // Create a reference to the new post
-      const imageFileName = `post_${Date.now()}.jpg`; // unique file name for the image 
-
-      // upload the image to firebase storage
+  
+    if (!userData || !userData.username) {
+      console.warn('User data is not available or does not contain a username.');
+      return;
+    }
+  
+    try {
+      const partyRef = ref(db, `parties/${presentPostParty}`);
+      const partySnapshot = await get(partyRef);
+  
+      if (!partySnapshot.exists()) {
+        console.warn('Selected party does not exist in the database.');
+        return;
+      }
+  
+      const newPostRef = push(ref(db, `parties/${presentPostParty}/posts`));
+      const imageFileName = `post_${Date.now()}.jpg`;
+  
       const storage = getStorage();
       const imageRef = storageRef(storage, imageFileName);
-
-      // upload the image file
-      try {
-        const response = await fetch(presentPostImage);
-        const blob = await response.blob();
-
-        // Set the content type to 'image/jpeg'
-        const metadata = {
-          contentType: 'image/jpeg',
-        };
-
-        const snapshot = await uploadBytes(imageRef, blob, metadata);
-        const imageUrl = await getDownloadURL(imageRef);
-
-        set(newPostRef, { // Update the new post's data
-          title: presentPostTitle,
-          text: presentPostText,
-          party: presentPostParty,
-          image: imageUrl,
-          username: userData.username,
-          timestamp: { '.sv': 'timestamp' }
-        });
-
-        // Clear the input fields
-        setPresentPostTitle("");
-        setPresentPostText("");
-        setPresentPostParty("");
-        setPresentPostImage("");
-
-        onClose();
-      } catch (error) {
-        console.error('Error uploading image', error);
-      }
-    } else {
-      console.warn('User data is not available or does not contain a username.');
+  
+      const response = await fetch(presentPostImage);
+      const blob = await response.blob();
+  
+      const metadata = {
+        contentType: 'image/jpeg',
+      };
+  
+      await uploadBytes(imageRef, blob, metadata);
+      const imageUrl = await getDownloadURL(imageRef);
+  
+      const postDataWithUsername = { ...postData, username: userData.username };
+  
+      set(newPostRef, {
+        ...postDataWithUsername,
+        image: imageUrl,
+        timestamp: { '.sv': 'timestamp' },
+      });
+  
+      setPresentPostTitle('');
+      setPresentPostText('');
+      setPresentPostParty('');
+      setPresentPostImage('');
+  
+      onClose();
+    } catch (error) {
+      console.error('Error adding new post', error);
+      // Handle error appropriately (e.g., show an error message to the user)
     }
   }
 

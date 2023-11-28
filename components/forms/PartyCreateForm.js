@@ -1,7 +1,9 @@
 import { db } from '../../firebase-config';
 import { ref, push, set, get, query, orderByChild, equalTo } from 'firebase/database';
 import { useState } from "react";
-import { StyleSheet, TextInput, View, Text, SafeAreaView, TouchableWithoutFeedback, Keyboard, Alert } from "react-native";
+import { StyleSheet, TextInput, View, Text, SafeAreaView, TouchableWithoutFeedback, Keyboard, Alert, Image } from "react-native";
+import * as ImagePicker from 'expo-image-picker';
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Colors } from "../../constants/styles";
 import Button from '../ui/Button';
 
@@ -9,15 +11,16 @@ function CreatePartyForm({ onClose }) {
 
   const [presentPartyTitle, setPresentPartyTitle] = useState("");
   const [presentPartyBio, setPresentPartyBio] = useState("");
+  const [presentPartyImage, setPresentPartyImage] = useState("");
 
   const handleAddNewPost = async () => {
-    if (presentPartyTitle.trim() !== '' && presentPartyBio.trim() !== '') {
+    if (presentPartyTitle.trim() !== '' && presentPartyBio.trim() !== '' && presentPartyImage.trim() !== '') {
       try {
         // Check if a party with the same title already exists
         const partyExists = await checkPartyExists(presentPartyTitle);
         if (!partyExists) {
           // If the party doesn't exist, proceed with adding the post
-          addNewPost({ party: presentPartyTitle, partyBio: presentPartyBio });
+          addNewPost({ party: presentPartyTitle, partyBio: presentPartyBio, partyImage: presentPartyImage });
           // Close the modal
           onClose();
         } else {
@@ -34,25 +37,91 @@ function CreatePartyForm({ onClose }) {
 
   async function checkPartyExists(partyTitle) {
     try {
-      const partyRef = ref(db, 'parties');
-      const partyQuery = query(partyRef, orderByChild('party'), equalTo(partyTitle));
-      const snapshot = await get(partyQuery);
-      return snapshot.exists();
+        const partyRef = ref(db, 'parties');
+        const partyQuery = query(partyRef, orderByChild('party'), equalTo(partyTitle));
+        const snapshot = await get(partyQuery);
+        return snapshot.exists();
+      } catch (error) {
+        console.error("Error while checking party existence:", error);
+        throw error; // Rethrow the error to handle it in the caller function
+      }
+    }
+
+    async function addNewPost(partyData) {
+      try{
+          const partyTitle =partyData.party;
+          // Check if a party with the same title already exists
+         const partyExists = await checkPartyExists(partyTitle);
+         if (partyExists) {
+        Alert.alert('Party already exists with the same title');
+      return;
+    } 
+
+        const partyRef = ref(db, `parties/${partyTitle}`); // Create a reference to the new post
+
+      if (partyData.partyImage) {
+        // if there is an image, upload it to storage
+        const storage = getStorage();
+        const imageFileName = `party_${Date.now()}.jpg`; // unique file name for the image 
+        const imageRef = storageRef(storage, imageFileName);
+
+        // upload the image file
+        try {
+          const response = await fetch(partyData.partyImage);
+          const blob = await response.blob();
+
+          // set content to jpeg
+          const metadata = {
+            contentType: 'image/jpeg',
+          };
+
+          await uploadBytes(imageRef, blob, metadata);
+          const imageUrl = await getDownloadURL(imageRef);
+
+          //ppdate the new post's data withimage url
+          partyData.partyImage = imageUrl;
+        } catch (error) {
+          console.error('Error uploading image', error);
+          throw error;
+        }
+      }
+
+      //update the new post's data
+      await set(partyRef, {
+        party: partyData.party,
+        partyBio: partyData.partyBio,
+        partyImage: partyData.partyImage,
+        timestamp: { '.sv': 'timestamp' }
+      });
+
+      // Clear the input fields
+      setPresentPartyTitle("");
+      setPresentPartyBio("");
+      setPresentPartyImage("");
+
+      onClose();
     } catch (error) {
-      console.error("Error while checking party existence:", error);
-      throw error; // Rethrow the error to handle it in the caller function
+      console.error('Error while adding a new party:', error);
+      Alert.alert('Error while adding a new party. Please try again later.');
     }
   }
 
-  function addNewPost() {
-    const newPostRef = push(ref(db, 'parties')); // Create a reference to the new post
-    set(newPostRef, { // Update the new post's data
-      party: presentPartyTitle,
-      partyBio: presentPartyBio,
-      timestamp: { '.sv': 'timestamp' }
-    });
-    setPresentPartyTitle("");
-    setPresentPartyBio("");
+  const handleImagePicker = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (permissionResult.granted === false) {
+      console.log('Permission to access the media library is required');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync();
+
+    if (!result.canceled) {
+      if (result.assets && result.assets.length > 0) {
+        const selectedAsset = result.assets[0];
+        setPresentPartyImage(selectedAsset.uri);
+      }
+    }
   }
 
   return (
@@ -81,6 +150,10 @@ function CreatePartyForm({ onClose }) {
               setPresentPartyBio(text);
             }}
           />
+          {presentPartyImage ? (
+            <Image source={{ uri: presentPartyImage }} style={styles.selectedImage}/>
+          ) : null}
+          <Button title="Select Image" onPress={handleImagePicker} />   
         </View>
       </TouchableWithoutFeedback>
       <View>
@@ -147,6 +220,12 @@ const styles = StyleSheet.create({
       width: "90%",
       marginTop: 15,
       //color: "#000",
+  },
+  selectedImage: {
+    width: 200,
+    height: 200,
+    resizeMode: 'cover',
+    marginVertical: 10,
   },
     button: {
       borderRadius: 12,

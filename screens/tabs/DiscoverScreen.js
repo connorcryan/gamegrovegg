@@ -17,33 +17,35 @@ function DiscoverScreenDisplay() {
   const nav = useNavigation();
 
   const handlePostPress = (post) => {
-    nav.navigate('PostDetail', { 
+    nav.navigate("PostDetail", {
       post,
-    title: post.party });
+      title: post.party,
+    });
   };
 
   const handlePartyPress = (party) => {
-    nav.navigate('PartyDetailScreen', {
+    console.log("Selected Party:", party);
+    nav.navigate("PartyDetailScreen", {
       party,
     });
   };
 
   useEffect(() => {
-    const unsubscribe = onValue(ref(db, 'posts'), (querySnapShot) => {
+    const unsubscribe = onValue(ref(db, "posts"), (querySnapShot) => {
       if (querySnapShot.exists()) {
         let data = querySnapShot.val() || {};
         setPosts(data);
       } else {
-        console.log('⛔️ Object is falsy');
+        console.log("⛔️ Object is falsy");
       }
     });
 
-    const unsubscribeParties = onValue(ref(db, 'parties'), (querySnapShot) => {
+    const unsubscribeParties = onValue(ref(db, "parties"), (querySnapShot) => {
       if (querySnapShot.exists()) {
         let data = querySnapShot.val() || {};
         setParties(data);
       } else {
-        console.log('⛔️ Object is falsy');
+        console.log("⛔️ Object is falsy");
       }
     });
 
@@ -55,15 +57,18 @@ function DiscoverScreenDisplay() {
   }, []);
 
   // func to filter parties
-  const filteredParties = Object.keys(parties).filter((key) =>
-  parties[key].party.toLowerCase().includes(searchKeyword.toLowerCase())
-);
+  const filteredParties = Object.keys(parties).filter(
+    (key) =>
+      (searchKeyword !== "") &
+      parties[key].party.toLowerCase().includes(searchKeyword.toLowerCase())
+  );
 
   // func to filter posts based on keywords
-  const filteredPosts = Object.keys(posts).filter(key =>
-    posts[key].title.toLowerCase().includes(searchKeyword.toLowerCase()) ||
-    posts[key].party.toLowerCase().includes(searchKeyword.toLowerCase())
-  );
+  const filteredPosts = Object.keys(posts).filter(
+    (key) =>
+      posts[key].title.toLowerCase().includes(searchKeyword.toLowerCase()) ||
+      posts[key].party.toLowerCase().includes(searchKeyword.toLowerCase())
+  ).sort((key1, key2) => posts[key2].timestamp = posts[key1].timestamp);
 
   return (
     <SafeAreaView style={styles.containerWrapper}>
@@ -71,11 +76,11 @@ function DiscoverScreenDisplay() {
         style={styles.searchInput}
         placeholder="Search by party"
         value={searchKeyword}
-        onChangeText={text => setSearchKeyword(text)}
+        onChangeText={(text) => setSearchKeyword(text)}
       />
-      
+
       <ScrollView contentContainerStyle={styles.scrollContent}>
-      {filteredParties.length > 0 && (
+        {filteredParties.length > 0 && (
           <View style={styles.partiesSection}>
             <Text style={styles.sectionTitle}>Parties</Text>
             {filteredParties.map((key) => (
@@ -84,7 +89,7 @@ function DiscoverScreenDisplay() {
                 style={styles.partyContainer}
                 onPress={() => handlePartyPress(parties[key])}
               >
-                <Text style={styles.partyName}>{parties[key].party}</Text>
+                <Text style={styles.partyName}>{parties[key]?.party}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -100,14 +105,14 @@ function DiscoverScreenDisplay() {
                 <Text style={styles.title}>{posts[key].title}</Text>
                 <Text style={styles.party}>{posts[key].party}</Text>
               </View>
-              {posts[key].image && posts[key].image.trim() !== '' ? (
+              {posts[key].image && posts[key].image.trim() !== "" ? (
                 <Image
                   source={{ uri: posts[key].image }}
                   style={styles.postImage}
-                  onError={(error) => console.log('Image load error:', error)}
+                  onError={(error) => console.log("Image load error:", error)}
                 />
               ) : null}
-              {posts[key].video && posts[key].video.trim() !== '' ? (
+              {posts[key].video && posts[key].video.trim() !== "" ? (
                 <Video
                   source={{ uri: posts[key].video }}
                   style={styles.postVideo}
