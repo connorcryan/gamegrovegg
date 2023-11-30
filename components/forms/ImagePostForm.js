@@ -38,6 +38,7 @@ function ImagePostForm({onClose}) {
     }
   
     try {
+      const userPostsRef = ref(db, `users/${userData.uid}/posts`);
       const partyRef = ref(db, `parties/${presentPostParty}`);
       const partySnapshot = await get(partyRef);
   
@@ -45,6 +46,12 @@ function ImagePostForm({onClose}) {
         console.warn('Selected party does not exist in the database.');
         return;
       }
+
+      const newUserPostRef = push(userPostsRef);
+        set(newUserPostRef, {
+          ...postData,
+          timestamp: { ".sv": "timestamp" },
+        });
   
       const newPostRef = push(ref(db, `parties/${presentPostParty}/posts`));
       const imageFileName = `post_${Date.now()}.jpg`;
