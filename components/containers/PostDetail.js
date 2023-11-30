@@ -15,7 +15,7 @@ function PostDetailScreen({ route }) {
     nav.setOptions({
       title: title,
       headerTitle: () => (
-        <Text style={styles.headerTitle} onPress={() => navigateToPartyDetailScreen()}>
+        <Text style={styles.headerTitle} onPress={navigateToPartyDetailScreen}>
           {post.party}
         </Text>
       ),
