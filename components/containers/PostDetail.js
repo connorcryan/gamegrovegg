@@ -1,17 +1,26 @@
-import React, {useEffect, useState} from "react";
-import { View, Text, StyleSheet, Image, ScrollView, TouchableHighlight } from 'react-native';
+import React, {useContext, useEffect, useState} from "react";
+import { View, Text, StyleSheet, Image, ScrollView, TouchableHighlight, Alert } from 'react-native';
 import { useNavigation } from "@react-navigation/native";
 import { Colors } from "../../constants/styles";
 import { Video } from 'expo-av';
+import { AuthContext } from "../store/auth-context";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
 function PostDetailScreen({ route }) {
   const { post, title } = route.params;
   const nav = useNavigation();
-
+  const authContext = useContext(AuthContext);
+  const [userData, setUserData] = useState(null);
   const [imageHeight, setImageHeight] = useState(0);
 
   useEffect(() => {
+    console.log('authContext.user:', authContext.user);
+    console.log('post.username:', post.username);
+
+    // use userData.username
+    const username = userData ? userData.username : null;
+
     nav.setOptions({
       title: title,
       headerTitle: () => (
@@ -19,8 +28,23 @@ function PostDetailScreen({ route }) {
           {post.party}
         </Text>
       ),
+      headerRight: () => {
+        // use username from userData
+        if (!userData || post.username !== userData.username) {
+          return null; // or render a loading state
+        }
+
+        return (
+          <TouchableHighlight
+            underlayColor="transparent"
+            onPress={() => handleDeletePress()}
+          >
+            <Text style={styles.deleteIcon}>Delete</Text>
+          </TouchableHighlight>
+        );
+      },
     });
-  }, [title, post.party]);
+  }, [title, post.party, post.username, userData]);
 
   useEffect(() => {
     if (post.image) {
@@ -32,9 +56,42 @@ function PostDetailScreen({ route }) {
     }
   }, [post.image]);
 
+  useEffect(() => {
+    // Set userData from AsyncStorage
+    AsyncStorage.getItem('userData')
+      .then((userDataString) => {
+        const parsedUserData = JSON.parse(userDataString);
+        setUserData(parsedUserData || null); // Set null if userData is null or undefined
+      })
+      .catch((error) => {
+        console.error('Error retrieving userData from AsyncStorage:', error);
+      });
+  }, []);
+
   const navigateToPartyDetailScreen = () => {
     nav.navigate('PartyDetailScreen', { partyDetails: post });
   };
+
+  const handleDeletePress = () => {
+    Alert.alert(
+      'Delete Post',
+      'Are you sure you want to delete this post?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        { text: 'Delete', onPress: () => handleDeletePost() },
+      ],
+      { cancelable: true }
+    );
+  };
+
+  const handleDeletePost = () => {
+    // logic to delete the post from the database here
+    nav.goBack();
+  };
+
 
   return (
     <ScrollView>
@@ -125,5 +182,9 @@ const styles = StyleSheet.create({
     padding: 5,
     marginTop: 10,
     marginBottom: 30,
+  },
+  deleteIcon: {
+    color: Colors.danger, // You can define a danger color in your Colors constant
+    marginRight: 15,
   },
 });
