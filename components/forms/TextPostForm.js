@@ -82,7 +82,6 @@ function TextPostForm({onClose}) {
       postData.username = userData.username;
       
       try {
-        const userPostsRef = ref(db, `users/${userData.uid}/posts`);
         const partyRef = ref(db, `parties/${presentPostParty}`);
         const partySnapshot = await get(partyRef);
 
@@ -91,29 +90,33 @@ function TextPostForm({onClose}) {
           return;
         }
 
-        const newUserPostRef = push(userPostsRef);
-        set(newUserPostRef, {
-          ...postDataWithUsername,
-          ...postData,
-          timestamp: { ".sv": "timestamp" },
-        });
-
-        const newPostRef = push(ref(db, `parties/${presentPostParty}/posts`));
+        //gen unique key for posts
+        const postId = push(ref(db, "posts")).key;
 
         const postDataWithUsername = {
           ...postData,
           username: userData.username,
         };
-        set(newPostRef, {
+
+        const userPostsRef = ref(db, `users/${userData.uid}/posts/${postId}`);
+        //const newUserPostRef = push(userPostsRef);
+        set(userPostsRef, {
+          ...postDataWithUsername,
+          ...postData,
+          timestamp: { ".sv": "timestamp" },
+        });
+
+        const partyPostRef = ref(db, `parties/${presentPostParty}/posts/${postId}`);
+        set(partyPostRef, {
           ...postDataWithUsername,
           ...postData,
           timestamp: { ".sv": "timestamp" },
         });
 
         // Add post to the general Posts node
-        const allPostsRef = ref(db, "posts");
-        const newAllPostRef = push(allPostsRef);
-        set(newAllPostRef, {
+        const allPostsRef = ref(db, `posts/${postId}`);
+        //const newAllPostRef = push(allPostsRef);
+        set(allPostsRef, {
           ...postDataWithUsername,
           party: presentPostParty,
           timestamp: { ".sv": "timestamp" },

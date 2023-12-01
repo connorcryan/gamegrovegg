@@ -23,11 +23,17 @@ function DiscoverScreenDisplay() {
     });
   };
 
-  const handlePartyPress = (party) => {
-    console.log("Selected Party:", party);
-    nav.navigate("PartyDetailScreen", {
-      party,
-    });
+  const handlePartyPress = (partyKey) => {
+    const selectedParty = parties[partyKey];
+
+    if (selectedParty && selectedParty.party) {
+      console.log("Selected Party:", selectedParty);
+      nav.navigate("PartyDetailScreen", {
+        partyDetails: selectedParty,
+      });
+    } else {
+      console.error("Invalid party object:", selectedParty);
+    }
   };
 
   useEffect(() => {
@@ -43,7 +49,7 @@ function DiscoverScreenDisplay() {
     const unsubscribeParties = onValue(ref(db, "parties"), (querySnapShot) => {
       if (querySnapShot.exists()) {
         let data = querySnapShot.val() || {};
-        setParties(data);
+        setParties(Object.values(data));
       } else {
         console.log("⛔️ Object is falsy");
       }
@@ -60,15 +66,15 @@ function DiscoverScreenDisplay() {
   const filteredParties = Object.keys(parties).filter(
     (key) =>
       (searchKeyword !== "") &
-      parties[key].party.toLowerCase().includes(searchKeyword.toLowerCase())
+      parties[key]?.party?.toLowerCase().includes(searchKeyword.toLowerCase())
   );
 
   // func to filter posts based on keywords
   const filteredPosts = Object.keys(posts).filter(
     (key) =>
-      posts[key].title.toLowerCase().includes(searchKeyword.toLowerCase()) ||
-      posts[key].party.toLowerCase().includes(searchKeyword.toLowerCase())
-  ).sort((key1, key2) => posts[key2].timestamp = posts[key1].timestamp);
+      posts[key]?.title?.toLowerCase().includes(searchKeyword.toLowerCase()) ||
+      posts[key]?.party?.toLowerCase().includes(searchKeyword.toLowerCase())
+  ).sort((key1, key2) => posts[key2].timestamp - posts[key1].timestamp);
 
   return (
     <SafeAreaView style={styles.containerWrapper}>
@@ -82,13 +88,13 @@ function DiscoverScreenDisplay() {
         {filteredParties.length > 0 && (
           <View style={styles.partiesSection}>
             <Text style={styles.sectionTitle}>Parties</Text>
-            {filteredParties.map((key) => (
+            {Object.keys(parties).map((partyKey) => (
               <TouchableOpacity
-                key={key}
+                key={partyKey}
                 style={styles.partyContainer}
-                onPress={() => handlePartyPress(parties[key])}
+                onPress={() => handlePartyPress(partyKey)}
               >
-                <Text style={styles.partyName}>{parties[key]?.party}</Text>
+                <Text style={styles.partyName}>{parties[partyKey]?.party}</Text>
               </TouchableOpacity>
             ))}
           </View>

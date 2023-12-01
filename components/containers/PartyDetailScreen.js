@@ -24,6 +24,8 @@ function PartyDetailScreen  ({route}) {
     };
 
     useEffect(() => {
+      console.log("route.params:", route.params);
+      console.log("partyDetails:", partyDetails);
       const fetchData = async () => {
         if (!partyDetails || !partyDetails.party) {
           console.error("Error: partyDetails or partyDetails.party is undefined");
@@ -69,7 +71,7 @@ function PartyDetailScreen  ({route}) {
       };
   
       fetchData();
-    }, [partyDetails.party]);
+    }, [partyDetails?.party]);
   
     const fetchPartyPosts = async (matchingPartyData) => {
       try {
