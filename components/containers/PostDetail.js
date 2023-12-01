@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useState} from "react";
-import { View, Text, StyleSheet, Image, ScrollView, TouchableHighlight, Alert } from 'react-native';
+import { View, Text, StyleSheet, Image, ScrollView, TouchableHighlight, Alert, TouchableOpacity, TextInput } from 'react-native';
 import { useNavigation } from "@react-navigation/native";
 import { Colors } from "../../constants/styles";
 import { Video } from 'expo-av';
@@ -13,6 +13,8 @@ function PostDetailScreen({ route }) {
   const authContext = useContext(AuthContext);
   const [userData, setUserData] = useState(null);
   const [imageHeight, setImageHeight] = useState(0);
+  const [commentInput, setCommentInput] = useState(""); 
+  const [comments, setComments] = useState([]);
 
   useEffect(() => {
     console.log('authContext.user:', authContext.user);
@@ -68,6 +70,12 @@ function PostDetailScreen({ route }) {
       });
   }, []);
 
+  useEffect(() => {
+    // Load comments from the database here
+    // You may need to have a function to fetch comments based on post ID
+    // For example: fetchComments(post.id).then((data) => setComments(data));
+  }, [post.id]);
+
   const navigateToPartyDetailScreen = () => {
     nav.navigate('PartyDetailScreen', { partyDetails: post });
   };
@@ -91,6 +99,61 @@ function PostDetailScreen({ route }) {
     // logic to delete the post from the database here
     nav.goBack();
   };
+
+  const handleCommentPress = async () => {
+    if (commentInput.trim() === "") {
+      return; // Do not save empty comments
+    }
+
+    try {
+      const newComment = {
+        text: commentInput,
+        username: userData.username,
+        postId: post.id,
+      };
+
+      // save the comment to the database
+      await addCommentToDatabase(newComment);
+
+      // Clear the comment input field
+      setCommentInput("");
+    } catch (error) {
+      console.error("Error adding comment:", error);
+    }
+  };
+
+  async function addCommentToDatabase(commentData) {
+    const userData = authContext.user;
+
+    if( userData && userData.username) {
+      commentData.username = userData.username;
+
+      try {
+        const commentId = push(ref(db, `comments/${commentData.postId}`)).key;
+
+        const commentDataWithUsername = { 
+          ...commentData,
+          username: userData.username,
+        };
+
+        const postCommentsRef = ref(db, `posts/${commentData.postId}/comments/${commentId}`);
+        set(postCommentsRef, {
+          ...commentDataWithUsername,
+          timestamp: {".sv": "timestamp"},
+        });
+
+        const userCommentsref = ref(db, `users/${userData.uid}/comments/${commentId}`);
+        set(userCommentsref, {
+          ...commentDataWithUsername,
+          timestamp: {".sv": "timestamp"},
+        });
+
+        setCommentInput("");
+      } catch (error){
+        console.error('Error adding new comment', error);
+      }
+    }
+  }
 
 
   return (
@@ -116,6 +179,30 @@ function PostDetailScreen({ route }) {
         <Text style={styles.text}>{post.text}</Text>
         <Text style={styles.username}>{post.username}</Text>
       </View>
+      <Text style={styles.subtitle}>Comments</Text>
+      {userData?.username && (
+        <View>
+          <TextInput
+            style={styles.commentInput}
+            placeholder="Add a comment..."
+            value={commentInput}
+            onChangeText={(text) => setCommentInput(text)}
+          />
+          <TouchableOpacity
+            style={styles.button}
+            onPress={handleCommentPress} // Call your comment press handler here
+          >
+            <Text style={{ color: "white", textAlign: "center" }}>Comment</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      {comments.map((comment) => (
+        <View key={comment.id}>
+          <Text style={styles.comment}>{comment.text}</Text>
+          <Text style={styles.commentUsername}>{comment.username}</Text>
+        </View>
+      ))}
+      
     </ScrollView>
   );
 }
@@ -183,8 +270,42 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 30,
   },
+  buttonText: {
+    color: 'white',
+    textAlign: 'center',
+    fontSize: 16,
+  },
   deleteIcon: {
     color: Colors.danger, // You can define a danger color in your Colors constant
     marginRight: 15,
+  },
+  subtitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    paddingHorizontal: 15,
+    paddingTop: 10,
+    paddingBottom: 5,
+    color: Colors.primary700,
+  },
+  comment: {
+    fontSize: 16,
+    paddingHorizontal: 15,
+    paddingTop: 5,
+    paddingBottom: 5,
+    color: Colors.primary800,
+  },
+  commentUsername: {
+    fontSize: 14,
+    paddingHorizontal: 15,
+    paddingBottom: 10,
+    color: Colors.primary700,
+  },
+  commentInput: {
+    fontSize: 16,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.primary700,
+    marginBottom: 10,
   },
 });
