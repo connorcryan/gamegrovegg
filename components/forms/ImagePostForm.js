@@ -83,7 +83,13 @@ function ImagePostForm({onClose}) {
     }
   
     try {
-      const userPostsRef = ref(db, `users/${userData.uid}/posts`);
+      //unique key for the post
+      const postId = push(ref(db, `posts/${postId}`)).key;
+
+      const userPostsRef = ref(db, `users/${userData.uid}/posts/${postId}`);
+      const partyPostRef = ref(db, `parties/${presentPostParty}/posts/${postId}`);
+      const newAllPostRef = ref(db, `posts/${postId}`);
+
       const partyRef = ref(db, `parties/${presentPostParty}`);
       const partySnapshot = await get(partyRef);
   
@@ -91,15 +97,7 @@ function ImagePostForm({onClose}) {
         console.warn('Selected party does not exist in the database.');
         return;
       }
-
-      const newUserPostRef = push(userPostsRef);
-        set(newUserPostRef, {
-          ...postDataWithUsername,
-          ...postData,
-          timestamp: { ".sv": "timestamp" },
-        });
-  
-      const newPostRef = push(ref(db, `parties/${presentPostParty}/posts`));
+      
       const imageFileName = `post_${Date.now()}.jpg`;
   
       const storage = getStorage();
@@ -116,18 +114,20 @@ function ImagePostForm({onClose}) {
       const imageUrl = await getDownloadURL(imageRef);
   
       const postDataWithUsername = { ...postData, username: userData.username };
-  
-      set(newPostRef, {
-        ...postDataWithUsername,
-        image: imageUrl,
-        timestamp: { '.sv': 'timestamp' },
-      });
 
-      // Add post to the general Posts node
-      const allPostsRef = ref(db, "posts");
-      const newAllPostRef = push(allPostsRef);
+      set(userPostsRef, {
+        ...postDataWithUsername,
+        timestamp: { ".sv": "timestamp" },
+      });
+  
+      set(partyPostRef, {
+        ...postDataWithUsername,
+        timestamp: { ".sv": "timestamp" },
+      });
+  
       set(newAllPostRef, {
         ...postDataWithUsername,
+        party: presentPostParty,
         image: imageUrl,
         timestamp: { ".sv": "timestamp" },
       });
