@@ -78,7 +78,6 @@ function DiscoverScreenDisplay() {
         value={searchKeyword}
         onChangeText={(text) => setSearchKeyword(text)}
       />
-
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {filteredParties.length > 0 && (
           <View style={styles.partiesSection}>

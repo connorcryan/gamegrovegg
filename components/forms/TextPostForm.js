@@ -1,18 +1,66 @@
 import { db } from '../../firebase-config';
-import { ref, push, remove, set, get } from 'firebase/database';
-import { useState, useContext } from "react";
-import { StyleSheet, TextInput, View, Text, SafeAreaView, TouchableWithoutFeedback, Keyboard, Alert } from "react-native";
+import { ref, push, remove, set, get, onValue } from 'firebase/database';
+import { useState, useContext, useEffect, useRef } from "react";
+import { StyleSheet, TextInput, View, Dimensions, Text, SafeAreaView, TouchableWithoutFeedback, Keyboard, Alert, ScrollView, TouchableOpacity } from "react-native";
 import { Colors } from "../../constants/styles";
 import Button from '../ui/Button';
 import { AuthContext } from '../store/auth-context';
+
+const { width } = Dimensions.get("screen");
 
 function TextPostForm({onClose}) {
   
   const [presentPostTitle, setPresentPostTitle] = useState("");
   const [presentPostText, setPresentPostText] = useState("");
   const [presentPostParty, setPresentPostParty] = useState("");
+  const [selectedParty, setSelectedParty] = useState("");
+  const [parties, setParties] = useState([]);
+  const [searchKeyword, setSearchKeyword] = useState(""); // State to store the search keyword
+  const [partyListVisible, setPartyListVisible] = useState(true);
+  const presentPostPartyInputRef = useRef(null);
 
   const authCtx = useContext(AuthContext);
+
+  useEffect(() => {
+    const unsubscribeParties = onValue(ref(db, "parties"), (querySnapShot) => {
+      if (querySnapShot.exists()) {
+        let data = querySnapShot.val() || {};
+        setParties(data);
+      } else {
+        console.log("⛔️ Object is falsy");
+      }
+    });
+
+    return () => {
+      // Cleanup the listener when the component unmounts
+      unsubscribeParties();
+    };
+  }, []);
+
+  // func to filter parties
+  const filteredParties = Object.keys(parties).filter(
+    (key) =>
+      (searchKeyword !== "") &
+      parties[key].party.toLowerCase().includes(searchKeyword.toLowerCase())
+  );
+
+  useEffect(() => {
+    if (selectedParty) {
+      setPresentPostParty(selectedParty);
+    }
+  }, [selectedParty]);
+
+  const handlePartyPress = (party) => {
+    // Update the selected party and the input field
+    setSelectedParty(party.party);
+    //setPresentPostParty(party.party);
+    //setSearchKeyword("");
+    setPartyListVisible(false);
+
+    if (presentPostPartyInputRef.current) {
+      presentPostPartyInputRef.current.setNativeProps({ text: party.party });
+    }
+  };
   
   const handleAddNewPost = () => {
     if (presentPostTitle.trim() !== '' && presentPostText.trim() !== '' && presentPostParty.trim() !== '') {
@@ -45,6 +93,7 @@ function TextPostForm({onClose}) {
 
         const newUserPostRef = push(userPostsRef);
         set(newUserPostRef, {
+          ...postDataWithUsername,
           ...postData,
           timestamp: { ".sv": "timestamp" },
         });
@@ -91,18 +140,33 @@ function TextPostForm({onClose}) {
     <SafeAreaView style={styles.container}>
       <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
         <View style={styles.container}>
-        <Button onPress={onClose}></Button>
+          <Button onPress={onClose}></Button>
           <Text style={styles.title}>Create your post!</Text>
           <TextInput
-            placeholder="Party"
-            value={presentPostParty}
+            ref={presentPostPartyInputRef}  
             style={[styles.inputTitle, styles.text]}
-            keyboardType="default"
-            multiline={true}
+            placeholder="Search by party"
+            value={searchKeyword}
             onChangeText={(text) => {
-              setPresentPostParty(text);
+              setSearchKeyword(text);
+              setPartyListVisible(true); // Show the party list when typing
             }}
           />
+          {partyListVisible && filteredParties.length > 0 && (
+          <View style={styles.partiesSection}>
+            <Text style={styles.sectionTitle}>Parties</Text>
+            {filteredParties.map((key) => (
+              <TouchableOpacity
+                key={key}
+                style={styles.partyContainer}
+                onPress={() => handlePartyPress(parties[key])}
+                
+              >
+                <Text style={styles.partyName}>{parties[key]?.party}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
           <TextInput
             placeholder="Post Title"
             value={presentPostTitle}
@@ -123,12 +187,11 @@ function TextPostForm({onClose}) {
               setPresentPostText(text);
             }}
           />
-          
         </View>
       </TouchableWithoutFeedback>
       <View>
         <View>
-        <Button onPress={handleAddNewPost}> Create Post </Button>
+          <Button onPress={handleAddNewPost}> Create Post </Button>
         </View>
         {/* <View style={styles.button}>
           <Button
@@ -204,5 +267,28 @@ const styles = StyleSheet.create({
       padding: 5,
       marginTop: 10,
       marginBottom: 30,
+    },
+    partiesSection: {
+      width: width, 
+      padding: 10,
+      backgroundColor: Colors.primary100,
+    },
+    partyContainer: {
+      marginBottom: 10,
+      borderRadius: 12,
+      backgroundColor: Colors.primary50,
+      padding: 10,
+      elevation: 2,
+      shadowColor: 'black',
+      shadowOffset: { width: 1, height: 1 },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+    },
+    partyName: {
+      fontSize: 16,
+        paddingHorizontal: 5,
+        paddingTop: 5,
+        paddingBottom: 5,
+        color: Colors.primary800,
     }
 });

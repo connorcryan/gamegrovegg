@@ -176,6 +176,7 @@ function ProfileScreen({username}) {
             />
           ) : null}
           <Text style={styles.text}>{posts[key].text}</Text>
+          
         </TouchableOpacity>
 
         ))}

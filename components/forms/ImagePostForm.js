@@ -1,12 +1,14 @@
 import { db } from '../../firebase-config';
-import { ref, push, remove, set, get } from 'firebase/database';
+import { ref, push, remove, set, get, onValue } from 'firebase/database';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect, useRef } from "react";
 import { AuthContext } from '../store/auth-context';
-import { StyleSheet, TextInput, View, Text, SafeAreaView, TouchableWithoutFeedback, Keyboard, Alert, Image } from "react-native";
+import { StyleSheet, TextInput, View, Text, SafeAreaView, TouchableWithoutFeedback, Keyboard, Alert, Image, Dimensions, TouchableOpacity } from "react-native";
 import { Colors } from "../../constants/styles";
 import * as ImagePicker from 'expo-image-picker';
 import Button from '../ui/Button';
+
+const { width } = Dimensions.get("screen");
 
 function ImagePostForm({onClose}) {
   
@@ -14,8 +16,51 @@ function ImagePostForm({onClose}) {
   const [presentPostParty, setPresentPostParty] = useState("");
   const [presentPostImage, setPresentPostImage] = useState("");
   const [presentPostText, setPresentPostText] = useState("");
+  const [selectedParty, setSelectedParty] = useState("");
+  const [parties, setParties] = useState([]);
+  const [searchKeyword, setSearchKeyword] = useState(""); // State to store the search keyword
+  const [partyListVisible, setPartyListVisible] = useState(true);
+  const presentPostPartyInputRef = useRef(null);
 
   const authCtx = useContext(AuthContext);
+
+  useEffect(() => {
+    const unsubscribeParties = onValue(ref(db, "parties"), (querySnapShot) => {
+      if (querySnapShot.exists()) {
+        let data = querySnapShot.val() || {};
+        setParties(data);
+      } else {
+        console.log("⛔️ Object is falsy");
+      }
+    });
+
+    return () => {
+      // Cleanup the listener when the component unmounts
+      unsubscribeParties();
+    };
+  }, []);
+
+  // func to filter parties
+  const filteredParties = Object.keys(parties).filter(
+    (key) =>
+      (searchKeyword !== "") &
+      parties[key].party.toLowerCase().includes(searchKeyword.toLowerCase())
+  );
+
+  useEffect(() => {
+    if (selectedParty) {
+      setPresentPostParty(selectedParty);
+    }
+  }, [selectedParty]);
+
+  const handlePartyPress = (party) => {
+    setSelectedParty(party.party);
+    setPartyListVisible(false);
+
+    if (presentPostPartyInputRef.current) {
+      presentPostPartyInputRef.current.setNativeProps({ text: party.party });
+    }
+  };
 
   const handleAddNewPost = () => {
     if (presentPostTitle.trim() !== '' && presentPostText.trim() !== '' && presentPostParty.trim() !== '' && presentPostImage.trim() !== '') {
@@ -49,6 +94,7 @@ function ImagePostForm({onClose}) {
 
       const newUserPostRef = push(userPostsRef);
         set(newUserPostRef, {
+          ...postDataWithUsername,
           ...postData,
           timestamp: { ".sv": "timestamp" },
         });
@@ -127,17 +173,31 @@ function ImagePostForm({onClose}) {
       <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
         <View style={styles.container}>
         <Button onPress={onClose}></Button>
-          <Text style={styles.title}>Create your post!</Text>
-          <TextInput
-            placeholder="Party"
-            value={presentPostParty}
+        <TextInput
+            ref={presentPostPartyInputRef}  
             style={[styles.inputTitle, styles.text]}
-            keyboardType="default"
-            multiline={true}
+            placeholder="Search by party"
+            value={searchKeyword}
             onChangeText={(text) => {
-              setPresentPostParty(text);
+              setSearchKeyword(text);
+              setPartyListVisible(true); // Show the party list when typing
             }}
           />
+          {partyListVisible && filteredParties.length > 0 && (
+          <View style={styles.partiesSection}>
+            <Text style={styles.sectionTitle}>Parties</Text>
+            {filteredParties.map((key) => (
+              <TouchableOpacity
+                key={key}
+                style={styles.partyContainer}
+                onPress={() => handlePartyPress(parties[key])}
+                
+              >
+                <Text style={styles.partyName}>{parties[key]?.party}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
           <TextInput
             placeholder="Post Title"
             value={presentPostTitle}
@@ -249,5 +309,28 @@ const styles = StyleSheet.create({
       padding: 5,
       marginTop: 10,
       marginBottom: 30,
+    },
+    partiesSection: {
+      width: width, 
+      padding: 10,
+      backgroundColor: Colors.primary100,
+    },
+    partyContainer: {
+      marginBottom: 10,
+      borderRadius: 12,
+      backgroundColor: Colors.primary50,
+      padding: 10,
+      elevation: 2,
+      shadowColor: 'black',
+      shadowOffset: { width: 1, height: 1 },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+    },
+    partyName: {
+      fontSize: 16,
+        paddingHorizontal: 5,
+        paddingTop: 5,
+        paddingBottom: 5,
+        color: Colors.primary800,
     }
 });
