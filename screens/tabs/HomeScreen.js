@@ -4,6 +4,7 @@ import { useContext, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { AuthContext } from '../../components/store/auth-context';
 import PostDisplay from '../../components/containers/PostDisplay';
+import { Colors } from '../../constants/styles';
 
 function HomeScreen() {
   const [fetchedMesage, setFetchedMessage] = useState("");
@@ -41,6 +42,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: Colors.primary100,
     //padding: 32,
   },
   title: {

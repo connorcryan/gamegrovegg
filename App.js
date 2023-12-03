@@ -103,7 +103,7 @@ console.log("userData in ScreensOverview:", authCtx.userData);
         name="Home"
         component={HomeScreen}
         options={{
-          title: "Feed",
+          title: "GameGrove",
           tabBarLabel: "Home",
           tabBarIcon: ({color, size}) => (
             <Ionicons name="home" size={size} color={color} />
@@ -115,7 +115,7 @@ console.log("userData in ScreensOverview:", authCtx.userData);
         component={DiscoverScreen}
         options={{
           title: "Discover",
-          tabBarLabel: "Search",
+          tabBarLabel: "Discover",
           tabBarIcon: ({color, size}) => (
             <Ionicons name="search" size={size} color={color} />
           ),
@@ -132,7 +132,7 @@ console.log("userData in ScreensOverview:", authCtx.userData);
           ),
         }}
       />
-      <BottomTabs.Screen 
+      {/* <BottomTabs.Screen 
         name="Chat"
         component={ChatScreen}
         options={{
@@ -142,7 +142,7 @@ console.log("userData in ScreensOverview:", authCtx.userData);
             <Ionicons name="chatbubbles" size={size} color={color} />
           ),
         }}
-      />
+      /> */}
       <BottomTabs.Screen 
         name="Profile"
         component={ProfileScreenWrapper}
@@ -200,7 +200,7 @@ export default function App() {
 
   return (
     <>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <AuthContextProvider>
         <Root />
       </AuthContextProvider>

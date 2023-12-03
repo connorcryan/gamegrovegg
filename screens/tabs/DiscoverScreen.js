@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { db } from '../../firebase-config';
 import { onValue, ref } from 'firebase/database';
 import { StyleSheet } from "react-native";
-import { Colors } from "../../constants/styles";
+import { Colors, Posts, PartySearch, PostTextStyle } from "../../constants/styles";
 import { Video } from 'expo-av';
 
 const { width } = Dimensions.get("screen");
@@ -79,15 +79,15 @@ function DiscoverScreenDisplay() {
   return (
     <SafeAreaView style={styles.containerWrapper}>
       <TextInput
-        style={styles.searchInput}
-        placeholder="Search by party"
+        style={styles.searchInput} 
+        placeholder="Search by Party or Keyword..."
         value={searchKeyword}
         onChangeText={(text) => setSearchKeyword(text)}
       />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {filteredParties.length > 0 && (
           <View style={styles.partiesSection}>
-            <Text style={styles.sectionTitle}>Parties</Text>
+            <Text style={styles.heading}>Parties</Text>
             {Object.keys(parties).map((partyKey) => (
               <TouchableOpacity
                 key={partyKey}
@@ -141,86 +141,50 @@ function DiscoverScreenDisplay() {
 const styles = StyleSheet.create({
   containerWrapper: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
+    backgroundColor: Colors.primary100,
   },
   scrollContent: {
-    width: width, 
+    width: width,
     padding: 10,
     backgroundColor: Colors.primary100,
   },
-  postContainer: {
-    marginBottom: 10,
-    borderRadius: 12,
-    backgroundColor: Colors.primary50,
-    padding: 10,
-    elevation: 2,
-    shadowColor: 'black',
-    shadowOffset: { width: 1, height: 1 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
+  searchContainer: {
+    ...PartySearch.searchContainer,
   },
-    title: {
-      fontSize: 20,
-      fontWeight: 'bold',
-      paddingHorizontal: 5,
-      paddingTop: 3,
-      paddingBottom: 1,
-      color: Colors.primary700,
-    },
-    party: {
-      fontSize: 14,
-      //fontWeight: 'bold',
-      paddingHorizontal: 5,
-      //paddingTop: 5,
-      //paddingBottom: 5,
-      color: Colors.primary700,
-    },
-    text: {
-      fontSize: 16,
-      paddingHorizontal: 5,
-      paddingTop: 5,
-      paddingBottom: 5,
-      color: Colors.primary800,
-  },
-  postImage: {
-    width: 70,
-    height: 70,
-    borderRadius: 6,
-    position: 'absolute',
-    top: 10,
-    right: 10,
-  },
-  postVideo: {
-    width: 70,
-    height: 70,
-    borderRadius: 6,
-    position: 'absolute',
-    top: 10,
-    right: 10,
+  searchInput: {
+    ...PartySearch.partySearch,
   },
   partiesSection: {
-    width: width, 
-    padding: 10,
-    backgroundColor: Colors.primary100,
+    ...PartySearch.partiesSection,
   },
   partyContainer: {
-    marginBottom: 10,
-    borderRadius: 12,
-    backgroundColor: Colors.primary50,
-    padding: 10,
-    elevation: 2,
-    shadowColor: 'black',
-    shadowOffset: { width: 1, height: 1 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
+    ...PartySearch.partyContainer,
   },
   partyName: {
-    fontSize: 16,
-      paddingHorizontal: 5,
-      paddingTop: 5,
-      paddingBottom: 5,
-      color: Colors.primary800,
-  }
+    ...PartySearch.partyName,
+  },
+  postContainer: {
+    ...Posts.postContainer,
+  },
+  heading : {
+    ...PostTextStyle.headings,
+  },
+  title: {
+    ...PostTextStyle.postTitle,
+  },
+  party: {
+    ...PostTextStyle.postPartyName,
+  },
+  text: {
+    ...PostTextStyle.postTextContent,
+  },
+  postImage: {
+    ...Posts.postImage,
+  },
+  postVideo: {
+    ...Posts.postVideo,
+  },
 });
 
 export default DiscoverScreenDisplay;

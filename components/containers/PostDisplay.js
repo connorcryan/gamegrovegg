@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { db } from '../../firebase-config';
 import { onValue, ref } from 'firebase/database';
 import { StyleSheet } from "react-native";
-import { Colors } from "../../constants/styles";
+import { Colors, Posts, PostTextStyle } from "../../constants/styles";
 import { Video } from 'expo-av';
 
 const { width } = Dimensions.get("screen");
@@ -92,60 +92,24 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary100,
   },
   postContainer: {
-    marginBottom: 10,
-    borderRadius: 12,
-    backgroundColor: Colors.primary50,
-    padding: 10,
-    elevation: 2,
-    shadowColor: "black",
-    shadowOffset: { width: 1, height: 1 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    alignItems: 'flex-start', // Align items to the top
-    justifyContent: 'space-between',
-    
+    ...Posts.postContainer,
   },
   textContainer: {
-    flex: 1,
-    maxWidth: width - 100,
+    ...Posts.textContainer,
   },
   title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    paddingHorizontal: 5,
-    paddingTop: 3,
-    paddingBottom: 1,
-    color: Colors.primary700,
+    ...PostTextStyle.postTitle,
   },
   party: {
-    fontSize: 14,
-    //fontWeight: 'bold',
-    paddingHorizontal: 5,
-    //paddingTop: 5,
-    //paddingBottom: 5,
-    color: Colors.primary700,
+    ...PostTextStyle.postPartyName,
   },
   text: {
-    fontSize: 16,
-    paddingHorizontal: 5,
-    paddingTop: 5,
-    paddingBottom: 5,
-    color: Colors.primary800,
+    ...PostTextStyle.postTextContent,
   },
   postImage: {
-    width: 70,
-    height: 70,
-    borderRadius: 6,
-    position: 'absolute',
-    top: 10,
-    right: 10,
+    ...Posts.postImage,
   },
   postVideo: {
-    width: 70,
-    height: 70,
-    borderRadius: 6,
-    position: 'absolute',
-    top: 10,
-    right: 10,
+    ...Posts.postVideo,
   },
 });

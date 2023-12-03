@@ -3,9 +3,9 @@ import { ref, onValue, update } from "firebase/database";
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import React, {useState, useEffect, useContext, useLayoutEffect} from 'react';
 import { useNavigation } from "@react-navigation/native";
-import { StyleSheet, Text, View, Dimensions, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, ScrollView, TouchableOpacity, Image, SafeAreaView } from 'react-native';
 import { AuthContext } from '../../components/store/auth-context';
-import { Colors } from "../../constants/styles";
+import { Colors, Posts, PostTextStyle } from "../../constants/styles";
 import * as ImagePicker from 'expo-image-picker';
 import UserProfileBio from '../../components/containers/UserProfileBio';
 import { AntDesign } from '@expo/vector-icons';
@@ -125,63 +125,79 @@ function ProfileScreen({username}) {
   };
 
   return (
+    <SafeAreaView style={styles.containerWrapper}> 
     <ScrollView contentContainerStyle={styles.scrollContent}>
       <View style={styles.containerWrapper}>
-        <View style={styles.profileImageContainer}>
-          <View style={styles.imageWrapper}>
-            {tempProfileImage || profileImage ? (
-              <Image
-                source={{ uri: tempProfileImage || profileImage }}
-                style={styles.profileImage}
-              />
-            ) : null}
+        <View style={styles.profileInfoContainer}>
+          <View style={styles.profileImageContainer}>
+            <View style={styles.imageWrapper}>
+              {tempProfileImage || profileImage ? (
+                <Image
+                  source={{ uri: tempProfileImage || profileImage }}
+                  style={styles.profileImage}
+                />
+              ) : null}
+            </View>
           </View>
           <View style={styles.buttonWrapper}>
-            <TouchableOpacity onPress={handleImageIconPress} style={styles.editButton}>
-              <AntDesign name={isEditingImage ? 'close' : 'camerao'} size={24} color={Colors.primary} />
-            </TouchableOpacity>
-            {isEditingImage && (
-              <TouchableOpacity onPress={pickImage} style={styles.confirmButton}>
-                <AntDesign name="check" size={24} color={Colors.primary} />
+              <TouchableOpacity
+                onPress={handleImageIconPress}
+                style={styles.editButton}
+              >
+                <AntDesign
+                  name={isEditingImage ? "close" : "camerao"}
+                  size={24}
+                  color={Colors.primary500}
+                />
               </TouchableOpacity>
-            )}
-          </View>
-        </View>
-        <UserProfileBio bio={bio} onBioChange={handleBioChange} onSaveBio={handleSaveBio} />
+              {isEditingImage && (
+                <TouchableOpacity
+                  onPress={pickImage}
+                  style={styles.confirmButton}
+                >
+                  <AntDesign name="check" size={24} color={Colors.primary} />
+                </TouchableOpacity>
+              )}
+            </View>
+        <UserProfileBio
+          bio={bio}
+          onBioChange={handleBioChange}
+          onSaveBio={handleSaveBio}
+        />
+      </View>
         {Object.keys(posts).map((key) => (
           <TouchableOpacity
-          style={styles.postContainer}
-          key={key}
-          onPress={() => handlePostPress(posts[key])}
-        >
-          <View style={styles.textContainer}>
-            <Text style={styles.title}>{posts[key].title}</Text>
-            <Text style={styles.party}>{posts[key].party}</Text>
-          </View>
-          {posts[key].image && posts[key].image.trim() !== '' ? (
-            <Image
-              source={{ uri: posts[key].image }}
-              style={styles.postImage}
-              onError={(error) => console.log('Image load error:', error)}
-            />
-          ) : null}
-          {posts[key].video && posts[key].video.trim() !== '' ? (
-            <Video
-              source={{ uri: posts[key].video }}
-              style={styles.postVideo}
-              isLooping={false} // set to true if you want the video to loop
-              shouldPlay={false}
-              //useNativeControls
-              resizeMode="cover"
-            />
-          ) : null}
-          <Text style={styles.text}>{posts[key].text}</Text>
-          
-        </TouchableOpacity>
-
+            style={styles.postContainer}
+            key={key}
+            onPress={() => handlePostPress(posts[key])}
+          >
+            <View style={styles.textContainer}>
+              <Text style={styles.title}>{posts[key].title}</Text>
+              <Text style={styles.party}>{posts[key].party}</Text>
+            </View>
+            {posts[key].image && posts[key].image.trim() !== "" ? (
+              <Image
+                source={{ uri: posts[key].image }}
+                style={styles.postImage}
+                onError={(error) => console.log("Image load error:", error)}
+              />
+            ) : null}
+            {posts[key].video && posts[key].video.trim() !== "" ? (
+              <Video
+                source={{ uri: posts[key].video }}
+                style={styles.postVideo}
+                isLooping={false} // set to true if you want the video to loop
+                shouldPlay={false}
+                //useNativeControls
+                resizeMode="cover"
+              />
+            ) : null}
+            <Text style={styles.text}>{posts[key].text}</Text>
+          </TouchableOpacity>
         ))}
       </View>
     </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -191,77 +207,60 @@ const styles = StyleSheet.create({
   containerWrapper: {
     flex: 1,
     justifyContent: "center",
+    backgroundColor: Colors.primary100,
   },
   scrollContent: {
     width: width,
     padding: 10,
     backgroundColor: Colors.primary100,
   },
+  profileInfoContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.primary50,
+    paddingBottom: 20,
+    borderRadius: 30,
+    marginBottom: 10,
+  },
   profileImageContainer: {
     flexDirection: 'row',
-    alignContent: 'center',
-    justifyContent: 'center'
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 20,
+  },
+  imageWrapper: {
+    position: 'relative',
   },
   profileImage: {
-    width: 150,
-    height: 150,
-    borderRadius: 30,
+    width: 180,
+    height: 180,
+    borderRadius: 100,
+    paddingBottom: 20,
+  },
+  buttonWrapper: {
+    position: 'absolute', 
+    right:70, 
+    top: 20,
   },
   postContainer: {
-    marginBottom: 10,
-    borderRadius: 12,
-    backgroundColor: Colors.primary50,
-    padding: 10,
-    elevation: 2,
-    shadowColor: "black",
-    shadowOffset: { width: 1, height: 1 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    alignItems: 'flex-start', // Align items to the top
-    justifyContent: 'space-between',
-    
+    ...Posts.postContainer 
   },
   textContainer: {
-    flex: 1,
-    maxWidth: width - 100,
+    ...Posts.textContainer
   },
   title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    paddingHorizontal: 5,
-    paddingTop: 3,
-    paddingBottom: 1,
-    color: Colors.primary700,
+    ...PostTextStyle.postTitle,
   },
   party: {
-    fontSize: 14,
-    //fontWeight: 'bold',
-    paddingHorizontal: 5,
-    //paddingTop: 5,
-    //paddingBottom: 5,
-    color: Colors.primary700,
+    ...PostTextStyle.postPartyName,
   },
   text: {
-    fontSize: 16,
-    paddingHorizontal: 5,
-    paddingTop: 5,
-    paddingBottom: 5,
-    color: Colors.primary800,
+    ...PostTextStyle.postTextContent,
   },
   postImage: {
-    width: 70,
-    height: 70,
-    borderRadius: 6,
-    position: 'absolute',
-    top: 10,
-    right: 10,
+    ...Posts.postImage,
   },
   postVideo: {
-    width: 70,
-    height: 70,
-    borderRadius: 6,
-    position: 'absolute',
-    top: 10,
-    right: 10,
+    ...Posts.postVideo,
   },
 });

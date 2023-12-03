@@ -44,10 +44,11 @@ const UserProfileBio = ({ bio, onBioChange, onSaveBio }) => {
 
 const styles = StyleSheet.create({
     bioContainer: {
-      backgroundColor: Colors.primary500,
-      color: Colors.primary500,
+      //backgroundColor: Colors.primary500,
+      maxWidth: '80%',
+      alignItems: 'center',
+      color: Colors.primary800,
       padding: 16,
-      marginBottom: 16,
       borderRadius: 8,
     },
     header: {
@@ -57,28 +58,32 @@ const styles = StyleSheet.create({
       marginBottom: 8,
     },
     bioLabel: {
-      color: Colors.accent500,
+      color: Colors.primary800,
       fontSize: 18,
       fontWeight: 'bold',
     },
     editIcon: {
-      color: Colors.accent500,
+      color: Colors.primary800,
       fontSize: 18,
       fontWeight: 'bold',
     },
     bioInput: {
-      height: 100,
+      backgroundColor: Colors.primary100,
+      //height: 100,
+      minWidth: '90%',
       color: Colors.gray700,
       marginBottom: 8,
-      borderColor: 'gray',
-      borderWidth: 1,
-      borderRadius: 4,
+      // borderColor: 'gray',
+      // borderWidth: 1,
+      // borderRadius: 4,
+      borderRadius: 12,
       padding: 8,
     },
     bioText: {
-      color: Colors.gray700,
+      color: Colors.primary500,
+      textAlign: 'center',
       marginBottom: 8,
-      fontSize: 16,
+      fontSize: 18,
     },
   });
   

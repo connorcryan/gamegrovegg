@@ -2,9 +2,10 @@ import { db } from '../../firebase-config';
 import { ref, push, remove, set, get, onValue } from 'firebase/database';
 import { useState, useContext, useEffect, useRef } from "react";
 import { StyleSheet, TextInput, View, Dimensions, Text, SafeAreaView, TouchableWithoutFeedback, Keyboard, Alert, ScrollView, TouchableOpacity } from "react-native";
-import { Colors } from "../../constants/styles";
+import { Colors, FormStyles, PostTextStyle, PartySearch } from "../../constants/styles";
 import Button from '../ui/Button';
 import { AuthContext } from '../store/auth-context';
+import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get("screen");
 
@@ -135,76 +136,70 @@ function TextPostForm({onClose}) {
     }
   }
 
-  function removePost() {
-    // This is a remove function to be implemented later 
-    remove(ref(db, `posts/${postKey}`));
-  }
-
   return (
     <SafeAreaView style={styles.container}>
-      <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-        <View style={styles.container}>
-          <Button onPress={onClose}></Button>
-          <Text style={styles.title}>Create your post!</Text>
-          <TextInput
-            ref={presentPostPartyInputRef}  
-            style={[styles.inputTitle, styles.text]}
-            placeholder="Search by party"
-            value={searchKeyword}
-            onChangeText={(text) => {
-              setSearchKeyword(text);
-              setPartyListVisible(true); // Show the party list when typing
-            }}
-          />
-          {partyListVisible && filteredParties.length > 0 && (
-          <View style={styles.partiesSection}>
-            <Text style={styles.sectionTitle}>Parties</Text>
-            {filteredParties.map((key) => (
-              <TouchableOpacity
-                key={key}
-                style={styles.partyContainer}
-                onPress={() => handlePartyPress(parties[key])}
-                
-              >
-                <Text style={styles.partyName}>{parties[key]?.party}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-          <TextInput
-            placeholder="Post Title"
-            value={presentPostTitle}
-            style={[styles.inputTitle, styles.text]}
-            keyboardType="default"
-            multiline={true}
-            onChangeText={(text) => {
-              setPresentPostTitle(text);
-            }}
-          />
-          <TextInput
-            placeholder="Post content..."
-            value={presentPostText}
-            style={[styles.inputText, styles.text]}
-            keyboardType="default"
-            multiline={true}
-            onChangeText={(text) => {
-              setPresentPostText(text);
-            }}
-          />
-        </View>
-      </TouchableWithoutFeedback>
       <View>
-        <View>
-          <Button onPress={handleAddNewPost}> Create Post </Button>
-        </View>
-        {/* <View style={styles.button}>
-          <Button
-            title="Remove Post"
-            onPress={removePost}
-            color={'red'}
-            style={{ marginTop: 20 }}
-          />
-        </View> */}
+        <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+          <View style={styles.formContainer}>
+            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+              <Ionicons name="md-close" size={32} />
+            </TouchableOpacity>
+            <Text style={styles.title}>Create your post!</Text>
+            <TextInput
+              placeholder="Party..."
+              placeholderTextColor={Colors.gray500}
+              ref={presentPostPartyInputRef}
+              style={[styles.inputTitle, styles.text]}
+              value={searchKeyword}
+              onChangeText={(text) => {
+                setSearchKeyword(text);
+                setPartyListVisible(true); // Show the party list when typing
+              }}
+            />
+            {partyListVisible && filteredParties.length > 0 && (
+              <View style={styles.partiesSection}>
+                <Text style={styles.partyTitle}>Parties</Text>
+                {filteredParties.map((key) => (
+                  <TouchableOpacity
+                    key={key}
+                    style={styles.partyContainer}
+                    onPress={() => handlePartyPress(parties[key])}
+                  >
+                    <Text style={styles.partyName}>{parties[key]?.party}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+            <TextInput
+              placeholder="Post Title..."
+              placeholderTextColor={Colors.gray500}
+              value={presentPostTitle}
+              style={[styles.inputTitle, styles.text]}
+              keyboardType="default"
+              multiline={true}
+              onChangeText={(text) => {
+                setPresentPostTitle(text);
+              }}
+            />
+            <TextInput
+              placeholder="Post content..."
+              placeholderTextColor={Colors.gray500}
+              value={presentPostText}
+              style={[styles.inputText, styles.text]}
+              keyboardType="default"
+              multiline={true}
+              onChangeText={(text) => {
+                setPresentPostText(text);
+              }}
+            />
+            <TouchableOpacity
+              onPress={handleAddNewPost}
+              style={styles.createPostButton}
+            >
+              <Text style={styles.buttonText}>Create Post</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableWithoutFeedback>
       </View>
     </SafeAreaView>
   );
@@ -213,86 +208,46 @@ function TextPostForm({onClose}) {
 export default TextPostForm;
 
 const styles = StyleSheet.create({
+  closeButton: {
+    ...FormStyles.closeButton
+  },
+  createPostButton: {
+    ...FormStyles.createPostButton,
+  },
+  buttonText: {
+    ...FormStyles.buttonText,
+  },
     container: {
-      flex: 1,
-      maxHeight: "90%",
-      //justifyContent: 'center',
-      alignItems: 'center', 
-      marginTop: 50,
-      marginHorizontal: 10,
-      backgroundColor: Colors.accent500,
-      borderRadius: 12,
-      // elevation: 2,
-      // shadowColor: 'white',
-      // shadowOffset: { width: 1, height: 1 },
-      // shadowOpacity: 0.25,
-      // shadowRadius: 4,
+      ...FormStyles.container,
+    },
+    formContainer: {
+      ...FormStyles.formContainer,
     },
     title: {
-      //alignItems: 'center',
-      fontSize: 24,
-      fontWeight: 'bold',
-      marginBottom: 40,
-      paddingHorizontal: 10,
-      paddingTop: 10,
-      paddingBottom: 5,
-      color: Colors.primary700,
+      ...FormStyles.title,
     },
     text: {
-      fontSize: 16,
-      paddingHorizontal: 10,
-      paddingTop: 5,
-      paddingBottom: 10,
-      minWidth: '80%',
-      maxWidth: '80%',
-      maxHeight: 100,
-      color: Colors.primary800,
+      ...FormStyles.text,
   },
     inputTitle: {
-        backgroundColor: Colors.accent400,
-        flexWrap: 'wrap',
-        padding: 10,
-        borderRadius: 12,
-        width: "90%",
-        marginTop: 15,
+      ...FormStyles.inputTitle,
     },
     inputText: {
-      backgroundColor: Colors.accent400,
-      flexWrap: 'wrap',
-      padding: 10,
-      borderRadius: 12,
-      minHeight: 200,
-      width: "90%",
-      marginTop: 15,
-      //color: "#000",
+      ...FormStyles.inputText,
   },
     button: {
-      borderRadius: 12,
-      padding: 5,
-      marginTop: 10,
-      marginBottom: 30,
+      ...FormStyles.button,
+    },
+    partyTitle: {
+      ...PostTextStyle.headings,
     },
     partiesSection: {
-      width: width, 
-      padding: 10,
-      backgroundColor: Colors.primary100,
+      ...FormStyles.partiesSection,
     },
     partyContainer: {
-      marginBottom: 10,
-      borderRadius: 12,
-      backgroundColor: Colors.primary50,
-      padding: 10,
-      elevation: 2,
-      shadowColor: 'black',
-      shadowOffset: { width: 1, height: 1 },
-      shadowOpacity: 0.25,
-      shadowRadius: 4,
+      ...FormStyles.partyContainer,
     },
     partyName: {
-      fontSize: 16,
-        paddingHorizontal: 5,
-        paddingTop: 5,
-        paddingBottom: 5,
-        color: Colors.primary800,
+      ...PartySearch.partyName,
     }
 });
