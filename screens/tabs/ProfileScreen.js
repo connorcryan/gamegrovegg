@@ -15,7 +15,7 @@ const { width } = Dimensions.get("screen");
 function ProfileScreen({username}) {
 
   const authCtx = useContext(AuthContext);
-
+  
   console.log("Received username prop:", username);
 
   const nav = useNavigation();

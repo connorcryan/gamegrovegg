@@ -113,7 +113,7 @@ function ImagePostForm({onClose}) {
       await uploadBytes(imageRef, blob, metadata);
       const imageUrl = await getDownloadURL(imageRef);
   
-      const postDataWithUsername = { ...postData, username: userData.username };
+      const postDataWithUsername = { ...postData, username: userData.username, postID: postId };
 
       set(userPostsRef, {
         ...postDataWithUsername,

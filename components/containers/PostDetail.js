@@ -1,3 +1,5 @@
+import { db } from "../../firebase-config";
+import { push, ref, set, serverTimestamp, onValue } from "firebase/database";
 import React, {useContext, useEffect, useState} from "react";
 import { View, Text, StyleSheet, Image, ScrollView, TouchableHighlight, Alert, TouchableOpacity, TextInput } from 'react-native';
 import { useNavigation } from "@react-navigation/native";
@@ -8,21 +10,23 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
 function PostDetailScreen({ route }) {
-  const { post, title } = route.params;
-  const nav = useNavigation();
-  const authContext = useContext(AuthContext);
-  const [userData, setUserData] = useState(null);
-  const [imageHeight, setImageHeight] = useState(0);
+  const { post, title} = route.params; //contains data from slected post
+  const postID = post ? post.postID : null; //variable for postKey from route params
+  const nav = useNavigation(); // for navigation to parties
+  const authContext = useContext(AuthContext); //authctx contains autenticated ifo and userdata
+  const [userData, setUserData] = useState(null); //get user data
+  const [imageHeight, setImageHeight] = useState(0); //for image posts  
+  //adding comments
   const [commentInput, setCommentInput] = useState(""); 
   const [comments, setComments] = useState([]);
+  //comment replies
+  const [selectedCommentId, setSelectedCommentId] = useState(null);
+  const [replyInput, setReplyInput] = useState("");
 
   useEffect(() => {
-    console.log('authContext.user:', authContext.user);
-    console.log('post.username:', post.username);
-
     // use userData.username
     const username = userData ? userData.username : null;
-
+    //will navigate to party based on the title of the party on the post if selected
     nav.setOptions({
       title: title,
       headerTitle: () => (
@@ -30,12 +34,12 @@ function PostDetailScreen({ route }) {
           {post.party}
         </Text>
       ),
+      //this displays a delete button if it is the user's post
       headerRight: () => {
         // use username from userData
         if (!userData || post.username !== userData.username) {
           return null; // or render a loading state
         }
-
         return (
           <TouchableHighlight
             underlayColor="transparent"
@@ -47,7 +51,7 @@ function PostDetailScreen({ route }) {
       },
     });
   }, [title, post.party, post.username, userData]);
-
+  //this checks if the post has an image and if it does it renders it
   useEffect(() => {
     if (post.image) {
       Image.getSize(post.image, (width, height) => {
@@ -58,6 +62,7 @@ function PostDetailScreen({ route }) {
     }
   }, [post.image]);
 
+  //this is to retrieve the userData from async storage
   useEffect(() => {
     // Set userData from AsyncStorage
     AsyncStorage.getItem('userData')
@@ -70,16 +75,36 @@ function PostDetailScreen({ route }) {
       });
   }, []);
 
+  //this checks the slected posts for comments based on the postID which is equaled 
+  //to the unique key in firebase database
   useEffect(() => {
-    // Load comments from the database here
-    // You may need to have a function to fetch comments based on post ID
-    // For example: fetchComments(post.id).then((data) => setComments(data));
-  }, [post.id]);
+    const postCommentsRef = ref(db, `posts/${postID}/comments`);
+  
+    const unsubscribe = onValue(postCommentsRef, (snapshot) => {
+      const commentsData = snapshot.val();
+      if (commentsData) {
+        // Convert comments object to an array
+        const commentsArray = Object.keys(commentsData).map((key) => ({
+          id: key,
+          ...commentsData[key],
+        }));
+        setComments(commentsArray);
+      } else {
+        setComments([]);
+      }
+    });
+  
+    return () => {
+      unsubscribe();
+    };
+  }, [postID]);
+  
 
   const navigateToPartyDetailScreen = () => {
     nav.navigate('PartyDetailScreen', { partyDetails: post });
   };
 
+  //basi delete func that handles the delete process and calls the delete function
   const handleDeletePress = () => {
     Alert.alert(
       'Delete Post',
@@ -95,61 +120,127 @@ function PostDetailScreen({ route }) {
     );
   };
 
+  //func that deletes posts from the database and returns to previous screen
   const handleDeletePost = () => {
     // logic to delete the post from the database here
     nav.goBack();
   };
 
+  //handler for when a user presses the comment button
   const handleCommentPress = async () => {
     if (commentInput.trim() === "") {
       return; // Do not save empty comments
     }
-
+    //comment data created
     try {
       const newComment = {
         text: commentInput,
         username: userData.username,
-        postId: post.id,
+        postID: postID,
       };
 
       // save the comment to the database
       await addCommentToDatabase(newComment);
 
-      // Clear the comment input field
+      // clear the comment input field once done
       setCommentInput("");
     } catch (error) {
       console.error("Error adding comment:", error);
     }
   };
 
+  const handleAddReply = async (commentId) => {
+    //dont save empty replies
+    if (replyInput.trim() === "") {
+      return; 
+    }
+  
+    try {
+      // reply object data
+      const newReply = {
+        text: replyInput,
+        username: userData.username,
+        timestamp: serverTimestamp(),
+      };
+  
+      //find the comment in the db
+      const selectedComment = comments.find((comment) => comment.id === commentId);
+      console.log("selected comment is:", selectedComment);
+      // add the reply to slected comment in db
+      if (selectedComment) {
+        if (!selectedComment.replies) {
+          selectedComment.replies = {};
+        }
+        const replyId = push(ref(db, `posts/${postID}/comments/${commentId}/replies`)).key;
+
+        set(ref(db, `posts/${postID}/comments/${commentId}/replies/${replyId}`), newReply);
+        setComments([...comments]);
+
+        //clear input
+        setReplyInput("");
+      }
+      
+      //reset the selected comment
+      setSelectedCommentId(null);
+    } catch (error) {
+      console.error("Error adding reply:", error);
+    }
+  };
+
+  //this function adds the comments to the database
   async function addCommentToDatabase(commentData) {
-    const userData = authContext.user;
-
-    if( userData && userData.username) {
+    console.log('addCommentToDatabse is being called');
+    const userData = authContext.userData;
+    console.log('userData:', userData);
+    //only works if user is logged in, saves comment username as user's username
+    if (userData && userData.username) {
       commentData.username = userData.username;
-
+  
       try {
-        const commentId = push(ref(db, `comments/${commentData.postId}`)).key;
-
-        const commentDataWithUsername = { 
+        console.log('trying to get ref to database');
+        //ref to the post the user is commenting on
+        const postCommentsRef = ref(db, `posts/${commentData.postID}/comments`);
+        console.log('Post to comment on:', postCommentsRef);
+        const newCommentRef = push(postCommentsRef);
+        
+        //stores comment data along with time stamp and username
+        const commentDataWithUsername = {
           ...commentData,
           username: userData.username,
+          timestamp: serverTimestamp(),
+          //replies: [],
         };
 
-        const postCommentsRef = ref(db, `posts/${commentData.postId}/comments/${commentId}`);
-        set(postCommentsRef, {
-          ...commentDataWithUsername,
-          timestamp: {".sv": "timestamp"},
-        });
-
-        const userCommentsref = ref(db, `users/${userData.uid}/comments/${commentId}`);
-        set(userCommentsref, {
-          ...commentDataWithUsername,
-          timestamp: {".sv": "timestamp"},
-        });
-
+        console.log('comment data:', commentDataWithUsername);
+  
+        set(newCommentRef, commentDataWithUsername);
+        //same again for storing the comments on the user's profile page
+        const userCommentsRef = ref(db, `users/${userData.uid}/comments`);
+        set(push(userCommentsRef), commentDataWithUsername);
+  
         setCommentInput("");
-      } catch (error){
+
+        if (commentData.replyTo) {
+          const parentCommentRef = ref(db, `posts/${commentData.postID}/comments/${commentData.replyTo}`);
+          const parentCommentSnapshot = await get(parentCommentRef);
+          const parentCommentData = parentCommentSnapshot.val();
+    
+          if (parentCommentData && !parentCommentData.replies) {
+            parentCommentData.replies = [];
+          }
+    
+          const replyId = push(parentCommentRef.child('replies')).key;
+    
+          const replyData = {
+            text: commentData.text,
+            username: userData.username,
+            timestamp: serverTimestamp(),
+          };
+    
+          set(ref(parentCommentRef.child(`replies/${replyId}`)), replyData);
+          set(ref(parentCommentRef, 'replies'), commentDataWithReplies.replies);
+        }
+      } catch (error) {
         console.error('Error adding new comment', error);
       }
     }
@@ -196,13 +287,44 @@ function PostDetailScreen({ route }) {
           </TouchableOpacity>
         </View>
       )}
-      {comments.map((comment) => (
-        <View key={comment.id}>
+      {Object.values(comments).map((comment) => (
+        <View style={styles.commentContainer} key={comment.id}>
           <Text style={styles.comment}>{comment.text}</Text>
           <Text style={styles.commentUsername}>{comment.username}</Text>
+          <TouchableOpacity onPress={() => setSelectedCommentId(comment.id)}>
+            <Text style={styles.replyIcon}>Reply</Text>
+          </TouchableOpacity>
+          {comment.replies && typeof comment.replies === "object" && (
+            <View style={styles.replyContainer}>
+              {Object.values(comment.replies).map((reply) => (
+                <View key={reply.id} style={styles.replyContainer}>
+                  <Text style={styles.replyText}>{reply.text}</Text>
+                  <Text style={styles.replyUsername}>{reply.username}</Text>
+                </View>
+              ))}
+            </View>
+          )}
         </View>
       ))}
-      
+      {selectedCommentId &&
+        comments.find((comment) => comment.id === selectedCommentId) && (
+          <View>
+            <TextInput
+              style={styles.replyInput}
+              placeholder="Add a reply..."
+              value={replyInput}
+              onChangeText={(text) => setReplyInput(text)}
+            />
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => handleAddReply(selectedCommentId)}
+            >
+              <Text style={{ color: "white", textAlign: "center" }}>
+                Add Reply
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
     </ScrollView>
   );
 }
@@ -294,6 +416,13 @@ const styles = StyleSheet.create({
     paddingBottom: 5,
     color: Colors.primary800,
   },
+  commentContainer: {
+    marginTop: 10,
+    marginBottom: 10,
+    marginHorizontal: 10,
+    backgroundColor: Colors.accent500,
+    borderRadius: 12,
+  },
   commentUsername: {
     fontSize: 14,
     paddingHorizontal: 15,
@@ -301,6 +430,39 @@ const styles = StyleSheet.create({
     color: Colors.primary700,
   },
   commentInput: {
+    fontSize: 16,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.primary700,
+    marginBottom: 10,
+  },
+  replyText: {
+    fontSize: 16,
+    paddingHorizontal: 15,
+    paddingTop: 5,
+    paddingBottom: 5,
+    color: Colors.primary800,
+  },
+  replyContainer: {
+    paddingTop: 10,
+    marginTop: 10,
+    marginBottom: 10,
+    marginHorizontal: 10,
+    backgroundColor: Colors.error50,
+    borderRadius: 12,
+  },
+  replyItem: {
+    marginLeft: 20, // Adjust the indentation as needed
+    marginBottom: 10, // Adjust the spacing between replies
+  },
+  replyUsername: {
+    fontSize: 14,
+    paddingHorizontal: 15,
+    paddingBottom: 10,
+    color: Colors.primary700,
+  },
+  replyInput: {
     fontSize: 16,
     paddingHorizontal: 15,
     paddingVertical: 10,

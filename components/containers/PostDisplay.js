@@ -14,10 +14,11 @@ function PostDisplay() {
   const nav = useNavigation();
   const [posts, setPosts] = useState({});
 
-  const handlePostPress = (post) => {
+  const handlePostPress = (key, post) => {
     nav.navigate('PostDetail', { 
       post,
-    title: post.party });
+    title: post.party,
+    postID: key });
   };
 
   useEffect(() => {
@@ -44,7 +45,7 @@ function PostDisplay() {
             <TouchableOpacity
               style={styles.postContainer}
               key={key}
-              onPress={() => handlePostPress(posts[key])}
+              onPress={() => handlePostPress(key, posts[key])}
             >
               <View style={styles.textContainer}>
                 <Text style={styles.title}>{posts[key].title}</Text>

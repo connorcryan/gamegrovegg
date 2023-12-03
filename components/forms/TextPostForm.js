@@ -95,6 +95,7 @@ function TextPostForm({onClose}) {
 
         const postDataWithUsername = {
           ...postData,
+          postID: postId,
           username: userData.username,
         };
 
