@@ -193,52 +193,36 @@ function PostDetailScreen({ route }) {
   };
 
   const handleAddReply = async (commentId) => {
-    //dont save empty replies
     if (replyInput.trim() === "") {
-      return; 
+      return;
     }
   
     try {
-      // reply object data
       const newReply = {
         text: replyInput,
         username: userData.username,
         timestamp: serverTimestamp(),
       };
-
-      const repliesRef = ref(db,`posts/${postID}/comments/${commentId}/replies`);
+  
+      const repliesRef = ref(db, `posts/${postID}/comments/${commentId}/replies`);
       const newReplyRef = push(repliesRef);
-
-      //find the comment in the db
-      const selectedComment = comments.find(
-        (comment) => comment.id === commentId
-      );
-      console.log("selected comment is:", selectedComment);
-      // add the reply to slected comment in db
-      if (selectedComment) {
-        if (!selectedComment.replies) {
-          selectedComment.replies = {};
-        }
-        const replyId = push(
-          ref(db, `posts/${postID}/comments/${commentId}/replies`)
-        ).key;
-
-        set(
-          ref(db, `posts/${postID}/comments/${commentId}/replies/${replyId}`),
-          newReply
-        );
-        setComments([...comments]);
-
-        //clear input
-        setReplyInput("");
-      }
-
-      //reset the selected comment
+      const replyId = newReplyRef.key;
+  
+      newReply.replyId = replyId;
+      console.log( " reply id is :", replyId);
+      // Update the database with the new reply
+      set(ref(db, `posts/${postID}/comments/${commentId}/replies/${replyId}`), newReply);
+  
+      // Clear input
+      setReplyInput("");
+  
+      // Reset the selected comment
       setSelectedCommentId(null);
     } catch (error) {
       console.error("Error adding reply:", error);
     }
   };
+  
   //func to delete comment
   const handleDeleteComment = async (commentId) => {
     try {
@@ -257,43 +241,23 @@ function PostDetailScreen({ route }) {
 
   //func to delete your reply from the database
   const handleDeleteReply = async (commentId, replyId) => {
+    console.log("Deleting reply with commentId:", commentId, "and replyId:", replyId);
     try {
-      console.log("Deleting reply. commentId:", commentId, "replyId:", replyId);
-  
-      // Delete reply from the database
-      const replyRef = ref(
-        db,
-        `posts/${postID}/comments/${commentId}/replies/${replyId}`
-      );
-      
-      console.log("Deleting reply. Ref:", replyRef.toString());
-  
+      // Delete comment from the database
+      const replyRef = ref(db, `posts/${postID}/comments/${commentId}/replies/${replyId}`);
+      console.log("Deleting reply at:", replyRef.toString());
       await remove(replyRef);
-  
       console.log("Reply deleted successfully.");
   
       // Update the replies state to reflect the deletion
-      setComments((prevComments) =>
-        prevComments.map((comment) =>
-          comment.id === commentId
-            ? {
-                ...comment,
-                replies: comment.replies
-                  ? Object.keys(comment.replies)
-                      .filter((key) => key !== replyId)
-                      .reduce((obj, key) => {
-                        obj[key] = comment.replies[key];
-                        return obj;
-                      }, {})
-                  : {},
-              }
-            : comment
-        )
+      setComments((prevReplies) =>
+        prevReplies.filter((reply) => reply.id !== replyId)
       );
     } catch (error) {
-      console.error("Error deleting reply:", error);
+      console.error("Error deleting comment:", error);
     }
   };
+  
   
   //this function adds the comments to the database
   async function addCommentToDatabase(commentData) {
@@ -348,6 +312,7 @@ function PostDetailScreen({ route }) {
           set(ref(parentCommentRef.child(`replies/${replyId}`)), replyData);
           set(ref(parentCommentRef, 'replies'), commentDataWithReplies.replies);
         }
+        //console.log("repliesData:", replyData);
       } catch (error) {
         console.error('Error adding new comment', error);
       }
@@ -409,12 +374,12 @@ function PostDetailScreen({ route }) {
           {comment.replies && typeof comment.replies === "object" && (
             <View style={styles.replyContainer}>
               {Object.values(comment.replies).map((reply) => (
-                <View key={reply.id} style={styles.replyContainer}>
+                <View key={reply.replyId} style={styles.replyContainer}>
                   <Text style={styles.replyText}>{reply.text}</Text>
                   <Text style={styles.replyUsername}>{reply.username}</Text>
                   {reply.username === userData?.username && (
                     <TouchableOpacity
-                      onPress={() => handleDeleteReply(comment.id, reply.id)}
+                      onPress={() => handleDeleteReply(comment.id, reply.replyId)}
                     >
                       <Text style={styles.deleteButton}>Delete</Text>
                     </TouchableOpacity>
