@@ -1,5 +1,5 @@
 import { db } from "../../firebase-config";
-import { push, ref, set, serverTimestamp, onValue } from "firebase/database";
+import { push, ref, set, get, serverTimestamp, onValue, remove } from "firebase/database";
 import React, {useContext, useEffect, useState} from "react";
 import { View, Text, StyleSheet, Image, ScrollView, TouchableHighlight, Alert, TouchableOpacity, TextInput } from 'react-native';
 import { useNavigation } from "@react-navigation/native";
@@ -120,10 +120,53 @@ function PostDetailScreen({ route }) {
     );
   };
 
-  //func that deletes posts from the database and returns to previous screen
-  const handleDeletePost = () => {
+  //func that deletes posts, comments and replies from the database
+  // and returns to previous screen
+  const handleDeletePost = async () => {
     // logic to delete the post from the database here
-    nav.goBack();
+    try {
+      //create ref to post in each location
+      const postRef = ref(db, `posts/${postID}`);
+      const userPostRef = ref(db, `users/${userData.uid}/posts/${postID}`);
+      const partyPostRef = ref(db, `parties/${post.party}/posts/${postID}`);
+      const postCommentsRef = ref(db, `posts/${postID}/comments`);
+      //const userCommentsRef = ref(db, `users/${userData.uid}/comments`);
+      //get comments related to post
+      const commentsSnapshot = await get(postCommentsRef);
+      const commentsData = commentsSnapshot.val();
+      console.log("comment datat: ", commentsData);
+      //reomove the post from each location
+      await remove(postRef);
+      await remove(userPostRef);
+      await remove(partyPostRef);
+      //await remove(userCommentsRef);
+      //delete comments and replies
+      if (commentsData) {
+        Object.keys(commentsData).forEach(async (commentId) => {
+          const commentRef = ref(db, `posts/${postID}/comments/${commentId}`);
+          const commentRepliesRef = ref(db, `posts/${postID}/comments/${commentId}/replies`);
+          const userCommentRef = ref(db, `users/${userData.uid}/comments/${commentId}`);
+          // get replies to the comment
+          const repliesSnapshot = await get(commentRepliesRef);
+          const repliesData = repliesSnapshot.val();
+          // remove comment from db
+          await remove(commentRef);
+          await remove(userCommentRef);
+          //delete the replies
+          if (repliesData) {
+            //delete all replies
+            Object.keys(repliesData).forEach(async (replyId) => {
+              const replyRef = ref(db, `posts/${postID}/comments/${commentId}/replies/${replyId}`);
+              await remove(replyRef);
+            });
+          }
+        });
+      }
+      //nav backto previous screen
+      nav.goBack();
+    } catch (error) {
+      console.error("Error deleting post:", error);
+    }
   };
 
   //handler for when a user presses the comment button
@@ -162,31 +205,96 @@ function PostDetailScreen({ route }) {
         username: userData.username,
         timestamp: serverTimestamp(),
       };
-  
+
+      const repliesRef = ref(db,`posts/${postID}/comments/${commentId}/replies`);
+      const newReplyRef = push(repliesRef);
+
       //find the comment in the db
-      const selectedComment = comments.find((comment) => comment.id === commentId);
+      const selectedComment = comments.find(
+        (comment) => comment.id === commentId
+      );
       console.log("selected comment is:", selectedComment);
       // add the reply to slected comment in db
       if (selectedComment) {
         if (!selectedComment.replies) {
           selectedComment.replies = {};
         }
-        const replyId = push(ref(db, `posts/${postID}/comments/${commentId}/replies`)).key;
+        const replyId = push(
+          ref(db, `posts/${postID}/comments/${commentId}/replies`)
+        ).key;
 
-        set(ref(db, `posts/${postID}/comments/${commentId}/replies/${replyId}`), newReply);
+        set(
+          ref(db, `posts/${postID}/comments/${commentId}/replies/${replyId}`),
+          newReply
+        );
         setComments([...comments]);
 
         //clear input
         setReplyInput("");
       }
-      
+
       //reset the selected comment
       setSelectedCommentId(null);
     } catch (error) {
       console.error("Error adding reply:", error);
     }
   };
+  //func to delete comment
+  const handleDeleteComment = async (commentId) => {
+    try {
+      // Delete comment from the database
+      const commentRef = ref(db, `posts/${postID}/comments/${commentId}`);
+      await remove(commentRef);
+  
+      // Update the comments state to reflect the deletion
+      setComments((prevComments) =>
+        prevComments.filter((comment) => comment.id !== commentId)
+      );
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+    }
+  };
 
+  //func to delete your reply from the database
+  const handleDeleteReply = async (commentId, replyId) => {
+    try {
+      console.log("Deleting reply. commentId:", commentId, "replyId:", replyId);
+  
+      // Delete reply from the database
+      const replyRef = ref(
+        db,
+        `posts/${postID}/comments/${commentId}/replies/${replyId}`
+      );
+      
+      console.log("Deleting reply. Ref:", replyRef.toString());
+  
+      await remove(replyRef);
+  
+      console.log("Reply deleted successfully.");
+  
+      // Update the replies state to reflect the deletion
+      setComments((prevComments) =>
+        prevComments.map((comment) =>
+          comment.id === commentId
+            ? {
+                ...comment,
+                replies: comment.replies
+                  ? Object.keys(comment.replies)
+                      .filter((key) => key !== replyId)
+                      .reduce((obj, key) => {
+                        obj[key] = comment.replies[key];
+                        return obj;
+                      }, {})
+                  : {},
+              }
+            : comment
+        )
+      );
+    } catch (error) {
+      console.error("Error deleting reply:", error);
+    }
+  };
+  
   //this function adds the comments to the database
   async function addCommentToDatabase(commentData) {
     console.log('addCommentToDatabse is being called');
@@ -215,7 +323,7 @@ function PostDetailScreen({ route }) {
   
         set(newCommentRef, commentDataWithUsername);
         //same again for storing the comments on the user's profile page
-        const userCommentsRef = ref(db, `users/${userData.uid}/comments`);
+        const userCommentsRef = ref(db, `users/${userData.uid}/posts/${postID}/comments`);
         set(push(userCommentsRef), commentDataWithUsername);
   
         setCommentInput("");
@@ -245,8 +353,7 @@ function PostDetailScreen({ route }) {
       }
     }
   }
-
-
+  
   return (
     <ScrollView>
       <View style={styles.container}>
@@ -291,6 +398,11 @@ function PostDetailScreen({ route }) {
         <View style={styles.commentContainer} key={comment.id}>
           <Text style={styles.comment}>{comment.text}</Text>
           <Text style={styles.commentUsername}>{comment.username}</Text>
+          {comment.username === userData?.username && (
+            <TouchableOpacity onPress={() => handleDeleteComment(comment.id)}>
+              <Text style={styles.deleteButton}>Delete</Text>
+            </TouchableOpacity>
+          )}
           <TouchableOpacity onPress={() => setSelectedCommentId(comment.id)}>
             <Text style={styles.replyIcon}>Reply</Text>
           </TouchableOpacity>
@@ -300,6 +412,13 @@ function PostDetailScreen({ route }) {
                 <View key={reply.id} style={styles.replyContainer}>
                   <Text style={styles.replyText}>{reply.text}</Text>
                   <Text style={styles.replyUsername}>{reply.username}</Text>
+                  {reply.username === userData?.username && (
+                    <TouchableOpacity
+                      onPress={() => handleDeleteReply(comment.id, reply.id)}
+                    >
+                      <Text style={styles.deleteButton}>Delete</Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
               ))}
             </View>
@@ -469,5 +588,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: Colors.primary700,
     marginBottom: 10,
+  },
+  deleteButton: {
+    color: 'red',
+    marginLeft: 10, // Adjust as needed
   },
 });
