@@ -318,6 +318,17 @@ function PostDetailScreen({ route }) {
       }
     }
   }
+
+  const handleToggleRepliesVisibility = (commentId) => {
+    setComments((prevComments) =>
+      prevComments.map((comment) =>
+        comment.id === commentId
+          ? { ...comment, showReplies: !comment.showReplies }
+          : comment
+      )
+    );
+  };
+  
   
   return (
     <ScrollView>
@@ -355,37 +366,66 @@ function PostDetailScreen({ route }) {
             style={styles.button}
             onPress={handleCommentPress} // Call your comment press handler here
           >
-            <Text style={{ color: "white", textAlign: "center" }}>Comment</Text>
+            <Text style={styles.buttonText}>Comment</Text>
           </TouchableOpacity>
         </View>
       )}
       {Object.values(comments).map((comment) => (
-        <View style={styles.commentContainer} key={comment.id}>
-          <Text style={styles.comment}>{comment.text}</Text>
-          <Text style={styles.commentUsername}>{comment.username}</Text>
-          {comment.username === userData?.username && (
-            <TouchableOpacity onPress={() => handleDeleteComment(comment.id)}>
-              <Text style={styles.deleteButton}>Delete</Text>
-            </TouchableOpacity>
-          )}
-          <TouchableOpacity onPress={() => setSelectedCommentId(comment.id)}>
-            <Text style={styles.replyIcon}>Reply</Text>
-          </TouchableOpacity>
+        <View key={comment.id}>
+          <View style={styles.commentContainer}>
+            <Text style={styles.comment}>{comment.text}</Text>
+            <View style={styles.commentDetailsContainer}>
+              <Text style={styles.commentUsername}>{comment.username}</Text>
+              {comment.username === userData?.username && (
+                <TouchableOpacity
+                  onPress={() => handleDeleteComment(comment.id)}
+                >
+                  <Text style={styles.deleteButton}>Delete</Text>
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity
+                onPress={() => setSelectedCommentId(comment.id)}
+              >
+                <Text style={styles.replyIcon}>Reply</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
           {comment.replies && typeof comment.replies === "object" && (
-            <View style={styles.replyContainer}>
-              {Object.values(comment.replies).map((reply) => (
-                <View key={reply.replyId} style={styles.replyContainer}>
-                  <Text style={styles.replyText}>{reply.text}</Text>
-                  <Text style={styles.replyUsername}>{reply.username}</Text>
-                  {reply.username === userData?.username && (
-                    <TouchableOpacity
-                      onPress={() => handleDeleteReply(comment.id, reply.replyId)}
-                    >
-                      <Text style={styles.deleteButton}>Delete</Text>
-                    </TouchableOpacity>
-                  )}
+            <View>
+              {/*toggle visibility of replies*/}
+              <TouchableOpacity
+                onPress={() => handleToggleRepliesVisibility(comment.id)}
+                style={styles.toggleRepliesButton}
+              >
+                <Text style={styles.toggleRepliesButtonText}>
+                  {comment.showReplies ? "Hide Replies" : "Show Replies"}
+                </Text>
+              </TouchableOpacity>
+              {comment.showReplies && (
+                <View style={styles.replyContainer}>
+                  {Object.values(comment.replies).map((reply) => (
+                    <View key={reply.replyId} style={styles.replyItemContainer}>
+                      <View style={styles.replyBubble}>
+                        <Text style={styles.replyText}>{reply.text}</Text>
+                        <View style={styles.commentDetailsContainer}>
+                          <Text style={styles.replyUsername}>
+                            {reply.username}
+                          </Text>
+                          {reply.username === userData?.username && (
+                            <TouchableOpacity
+                              onPress={() =>
+                                handleDeleteReply(comment.id, reply.replyId)
+                              }
+                            >
+                              <Text style={styles.deleteButton}>Delete</Text>
+                            </TouchableOpacity>
+                          )}
+                        </View>
+                      </View>
+                    </View>
+                  ))}
                 </View>
-              ))}
+              )}
             </View>
           )}
         </View>
@@ -420,7 +460,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 10,
     marginHorizontal: 10,
-    backgroundColor: Colors.accent500,
+    backgroundColor: Colors.primary50,
     borderRadius: 12,
     // elevation: 2,
     // shadowColor: 'white',
@@ -435,7 +475,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingTop: 10,
     paddingBottom: 5,
-    color: Colors.white,
+    color: Colors.primary800,
   },
   title: {
     fontSize: 20,
@@ -444,7 +484,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingTop: 10,
     paddingBottom: 5,
-    color: Colors.primary700,
+    color: Colors.primary800,
   },
   postImage: {
     width: '100%',
@@ -465,38 +505,41 @@ const styles = StyleSheet.create({
   },
   username: {
     fontSize: 16,
+    fontWeight: 'bold',
     paddingHorizontal: 15,
     paddingTop: 5,
     paddingBottom: 10,
     color: Colors.primary700,
   },
   button: {
+    backgroundColor: Colors.primary800,
     borderRadius: 12,
-    padding: 5,
-    marginTop: 10,
-    marginBottom: 30,
+    padding: 10,
+    marginTop: 5,
+    marginBottom: 20,
+    marginHorizontal: 10,
   },
   buttonText: {
     color: 'white',
     textAlign: 'center',
-    fontSize: 16,
+    fontSize: 20,
   },
   deleteIcon: {
-    color: Colors.danger, // You can define a danger color in your Colors constant
+    color: Colors.danger, 
     marginRight: 15,
   },
   subtitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
     paddingHorizontal: 15,
     paddingTop: 10,
     paddingBottom: 5,
-    color: Colors.primary700,
+    color: Colors.primary800,
   },
   comment: {
     fontSize: 16,
     paddingHorizontal: 15,
-    paddingTop: 5,
+    paddingTop: 10,
     paddingBottom: 5,
     color: Colors.primary800,
   },
@@ -504,22 +547,39 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 10,
     marginHorizontal: 10,
-    backgroundColor: Colors.accent500,
+    backgroundColor: Colors.primary50,
     borderRadius: 12,
   },
   commentUsername: {
     fontSize: 14,
+    fontWeight: 'bold',
     paddingHorizontal: 15,
     paddingBottom: 10,
     color: Colors.primary700,
   },
+  commentDetailsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 15,
+    paddingBottom: 10,
+  },
   commentInput: {
+    backgroundColor: Colors.primary50,
     fontSize: 16,
+    marginHorizontal: 10,
     paddingHorizontal: 15,
     paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.primary700,
+    borderRadius: 12,
+    // borderWidth: 2,
+    // borderColor: Colors.primary700,
     marginBottom: 10,
+  },
+  replyIcon: {
+    fontSize: 14,
+    paddingHorizontal: 15,
+    paddingBottom: 10,
+    color: Colors.gray700,
   },
   replyText: {
     fontSize: 16,
@@ -530,32 +590,66 @@ const styles = StyleSheet.create({
   },
   replyContainer: {
     paddingTop: 10,
-    marginTop: 10,
-    marginBottom: 10,
-    marginHorizontal: 10,
-    backgroundColor: Colors.error50,
+    //marginTop: 10,
+    marginBottom: 5,
+    marginHorizontal: 15,
+    //backgroundColor: Colors.primary50,
     borderRadius: 12,
   },
+  replyItemContainer: {
+    marginTop: 3,
+    //marginBottom: 10,
+    marginHorizontal: 10,
+    //backgroundColor: Colors.primary50,
+    borderRadius: 12,
+    //padding: 10,
+  },
+  replyBubble: {
+    backgroundColor: Colors.primary50,
+    borderRadius: 12,
+    padding: 5,
+    marginBottom: 5,
+  },
   replyItem: {
-    marginLeft: 20, // Adjust the indentation as needed
-    marginBottom: 10, // Adjust the spacing between replies
+    marginLeft: 20,
+    marginBottom: 5, 
   },
   replyUsername: {
     fontSize: 14,
+    fontWeight: 'bold',
     paddingHorizontal: 15,
-    paddingBottom: 10,
+    paddingBottom: 5,
     color: Colors.primary700,
   },
   replyInput: {
+    backgroundColor: Colors.primary50,
     fontSize: 16,
+    marginHorizontal: 10,
     paddingHorizontal: 15,
     paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.primary700,
+    borderRadius: 12,
+    // borderWidth: 2,
+    // borderColor: Colors.primary700,
     marginBottom: 10,
   },
   deleteButton: {
-    color: 'red',
-    marginLeft: 10, // Adjust as needed
+    fontSize: 14,
+    fontWeight: 'bold',
+    paddingHorizontal: 15,
+    paddingBottom: 10,
+    color: Colors.error500,// Adjust as needed
   },
+  toggleRepliesButton: {
+    backgroundColor: Colors.primary800,
+    borderRadius: 12,
+    padding: 5,
+    marginTop: 2,
+    marginBottom: 10,
+    marginHorizontal: 90,
+  },
+  toggleRepliesButtonText: {
+    color: "white",
+    textAlign: "center",
+    fontSize: 16,
+  },  
 });
