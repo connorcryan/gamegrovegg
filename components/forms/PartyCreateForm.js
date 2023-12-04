@@ -133,7 +133,7 @@ function CreatePartyForm({ onClose }) {
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
               <Ionicons name="md-close" size={32} />
             </TouchableOpacity>
-          <Text style={styles.title}>Create your post!</Text>
+          <Text style={styles.title}>Start the Partty!</Text>
           <TextInput
             placeholder="Party Title"
             placeholderTextColor={Colors.gray500}
@@ -169,7 +169,7 @@ function CreatePartyForm({ onClose }) {
               onPress={handleAddNewPost}
               style={styles.createPostButton}
             >
-              <Text style={styles.buttonText}>Create Post</Text>
+              <Text style={styles.buttonText}>Create Party</Text>
            </TouchableOpacity>  
             
         </View>
