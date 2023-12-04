@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { Colors } from '../../constants/styles';
 
 import Button from '../ui/Button';
 import Input from './Input';
@@ -50,8 +51,8 @@ function AuthForm({ isLogin, onSubmit, credentialsInvalid }) {
   }
 
   return (
-    <View style={styles.form}>
-      <View>
+    <View >
+      <View >
       {!isLogin && (<Input
           label="Username"
           onUpdateValue={updateInputValueHandler.bind(this, 'username')}
@@ -109,6 +110,16 @@ export default AuthForm;
 
 const styles = StyleSheet.create({
   buttons: {
+    justifyContent: 'center',
+    alignItems: 'center',
     marginTop: 12,
   },
+  form: {
+    flex: 1,
+    backgroundColor: Colors.primary50,
+  },
+  inputText: {
+    backgroundColor: Colors.primary800,
+  },
+  
 });

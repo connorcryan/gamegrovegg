@@ -308,7 +308,7 @@ export const FormStyles = {
     padding: 15,
     borderWidth: 3,
     borderRadius: 12,
-     borderColor: Colors.accent500,
+    borderColor: Colors.accent500,
     minHeight: 200,
     width: "90%",
     marginTop: 15,
