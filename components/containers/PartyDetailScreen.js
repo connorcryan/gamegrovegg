@@ -3,7 +3,7 @@ import { db } from "../../firebase-config";
 
 import { View, Text, StyleSheet, Image, ScrollView, Dimensions, TouchableOpacity } from 'react-native';
 import { useNavigation } from "@react-navigation/native";
-import { Colors } from "../../constants/styles";
+import { Colors, PostTextStyle, Posts } from "../../constants/styles";
 import { Video } from 'expo-av';
 import { orderByChild, ref, query, get } from "firebase/database";
 
@@ -98,8 +98,9 @@ function PartyDetailScreen  ({route}) {
 
     return (
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.container}>
-          <Text style={styles.title}> {partyDetails.party}</Text>
+        <View >
+        <Text style={styles.title}> Welcome to {partyDetails.party}!</Text>
+          <View style={styles.partyContainer}>
           {matchingParty && matchingParty.partyImage && (
             <Image
               source={{ uri: matchingParty.partyImage }}
@@ -109,6 +110,7 @@ function PartyDetailScreen  ({route}) {
           {matchingParty && matchingParty.partyBio && (
             <Text style={styles.bio}>{matchingParty.partyBio}</Text>
           )}
+          </View>
           <Text style={styles.sectionTitle}>Posts:</Text>
           {partyPosts.map((post) => (
             <TouchableOpacity
@@ -156,55 +158,26 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: Colors.primary100,
   },
+  sectionTitle: {
+    ...PostTextStyle.headings,
+  },
   postContainer: {
-    marginBottom: 10,
-    borderRadius: 12,
-    backgroundColor: Colors.primary50,
-    padding: 10,
-    elevation: 2,
-    shadowColor: 'black',
-    shadowOffset: { width: 1, height: 1 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
+    ...Posts.postContainer,
   },
     title: {
-      fontSize: 20,
-      fontWeight: 'bold',
-      paddingHorizontal: 5,
-      paddingTop: 3,
-      paddingBottom: 1,
-      color: Colors.primary700,
+      ...PostTextStyle.postTitle,
     },
     party: {
-      fontSize: 14,
-      //fontWeight: 'bold',
-      paddingHorizontal: 5,
-      //paddingTop: 5,
-      //paddingBottom: 5,
-      color: Colors.primary700,
+      ...PostTextStyle.postPartyName,
     },
     text: {
-      fontSize: 16,
-      paddingHorizontal: 5,
-      paddingTop: 5,
-      paddingBottom: 5,
-      color: Colors.primary800,
+      ...PostTextStyle.postTextContent,
   },
   postImage: {
-    width: 70,
-    height: 70,
-    borderRadius: 6,
-    position: 'absolute',
-    top: 10,
-    right: 10,
+    ...Posts.postImage,
   },
   postVideo: {
-    width: 70,
-    height: 70,
-    borderRadius: 6,
-    position: 'absolute',
-    top: 10,
-    right: 10,
+    ...Posts.postVideo,
   },
   partiesSection: {
     width: width, 
@@ -212,6 +185,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary100,
   },
   partyContainer: {
+    flexDirection: 'row',
     marginBottom: 10,
     borderRadius: 12,
     backgroundColor: Colors.primary50,
@@ -230,18 +204,23 @@ const styles = StyleSheet.create({
       color: Colors.primary800,
   },
   partyImage: {
-    width: 70,
-    height: 70,
+    width: 100,
+    height: 100,
     borderRadius: 6,
-    position: 'absolute',
-    top: 10,
-    right: 10,
+    // position: 'absolute',
+    // top: 10,
+    // left: 10,
   },
   bio: {
+    // justifyContent: 'flex-end',
+    // alignItems: 'flex-end',
     fontSize: 16,
-      paddingHorizontal: 5,
-      paddingTop: 5,
-      paddingBottom: 5,
-      color: Colors.primary800,
+    flex: 1,
+    textAlign: 'center',
+    //fontSize: 16,
+    paddingHorizontal: 5,
+    paddingTop: 5,
+    paddingBottom: 5,
+    color: Colors.primary800,
   }
 });

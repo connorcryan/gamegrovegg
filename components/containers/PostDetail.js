@@ -7,6 +7,7 @@ import { Colors } from "../../constants/styles";
 import { Video } from 'expo-av';
 import { AuthContext } from "../store/auth-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Ionicons } from '@expo/vector-icons';
 
 
 function PostDetailScreen({ route }) {
@@ -45,7 +46,7 @@ function PostDetailScreen({ route }) {
             underlayColor="transparent"
             onPress={() => handleDeletePress()}
           >
-            <Text style={styles.deleteIcon}>Delete</Text>
+            <Ionicons name="trash" size={24} color={Colors.error500} style={styles.deleteIcon} />
           </TouchableHighlight>
         );
       },
@@ -376,13 +377,7 @@ function PostDetailScreen({ route }) {
             <Text style={styles.comment}>{comment.text}</Text>
             <View style={styles.commentDetailsContainer}>
               <Text style={styles.commentUsername}>{comment.username}</Text>
-              {comment.username === userData?.username && (
-                <TouchableOpacity
-                  onPress={() => handleDeleteComment(comment.id)}
-                >
-                  <Text style={styles.deleteButton}>Delete</Text>
-                </TouchableOpacity>
-              )}
+              
               <TouchableOpacity
                 onPress={() => setSelectedCommentId(comment.id)}
               >
@@ -391,8 +386,14 @@ function PostDetailScreen({ route }) {
             </View>
           </View>
           {comment.replies && typeof comment.replies === "object" && (
-            <View>
-              {/*toggle visibility of replies*/}
+            <View style={styles.commentDetailsContainer}> 
+            {comment.username === userData?.username && (
+                <TouchableOpacity
+                  onPress={() => handleDeleteComment(comment.id)}
+                >
+                  <Ionicons name="trash" size={24} color={Colors.error500} style={styles.deleteButton} />
+                </TouchableOpacity>
+              )}
               <TouchableOpacity
                 onPress={() => handleToggleRepliesVisibility(comment.id)}
                 style={styles.toggleRepliesButton}
@@ -525,7 +526,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
   },
   deleteIcon: {
-    color: Colors.danger, 
+    color: Colors.primary800, 
     marginRight: 15,
   },
   subtitle: {
@@ -553,8 +554,8 @@ const styles = StyleSheet.create({
   commentUsername: {
     fontSize: 14,
     fontWeight: 'bold',
-    paddingHorizontal: 15,
-    paddingBottom: 10,
+    justifyContent: 'flex-start',
+    paddingBottom: 5,
     color: Colors.primary700,
   },
   commentDetailsContainer: {
@@ -633,23 +634,28 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   deleteButton: {
-    fontSize: 14,
+    //fontSize: 14,
     fontWeight: 'bold',
+    justifyContent: 'flex-start',
+    alignSelf: 'flex-start',
     paddingHorizontal: 15,
     paddingBottom: 10,
-    color: Colors.error500,// Adjust as needed
+    color: Colors.primary800,// Adjust as needed
   },
   toggleRepliesButton: {
+    maxWidth: 100,
     backgroundColor: Colors.primary800,
     borderRadius: 12,
+    justifyContent: 'flex-end',
+    alignSelf: 'flex-end',
     padding: 5,
     marginTop: 2,
     marginBottom: 10,
-    marginHorizontal: 90,
+    marginHorizontal: 20,
   },
   toggleRepliesButtonText: {
     color: "white",
     textAlign: "center",
-    fontSize: 16,
+    fontSize: 12,
   },  
 });

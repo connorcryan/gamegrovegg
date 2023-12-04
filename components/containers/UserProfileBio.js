@@ -18,13 +18,6 @@ const UserProfileBio = ({ bio, onBioChange, onSaveBio }) => {
     <View style={styles.bioContainer}>
       <View style={styles.header}>
         <Text style={styles.bioLabel}>User Bio:</Text>
-        {editMode ? (
-          <Button title="Save" onPress={handleSave} />
-        ) : (
-          <TouchableOpacity onPress={handleToggleEdit}>
-            <Text style={styles.editIcon}>✎</Text>
-          </TouchableOpacity>
-        )}
       </View>
 
       {editMode ? (
@@ -32,15 +25,30 @@ const UserProfileBio = ({ bio, onBioChange, onSaveBio }) => {
           style={styles.bioInput}
           multiline
           numberOfLines={4}
+          placeholder="Add a bio..."  // Added placeholder
           value={bio}
           onChangeText={onBioChange}
         />
       ) : (
-        <Text style={styles.bioText}>{bio}</Text>
+        <>
+          <Text style={styles.bioText}>
+            {bio ? bio : "No bio available"}  {/* Updated rendering logic */}
+          </Text>
+          <TouchableOpacity onPress={handleToggleEdit}>
+            <Text style={styles.editIcon}>✎</Text>
+          </TouchableOpacity>
+        </>
+      )}
+
+      {editMode && (
+        <View style={styles.buttonContainer}>
+          <Button title="Save" onPress={handleSave} />
+        </View>
       )}
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
     bioContainer: {
@@ -64,7 +72,7 @@ const styles = StyleSheet.create({
     },
     editIcon: {
       color: Colors.primary800,
-      fontSize: 18,
+      fontSize: 24,
       fontWeight: 'bold',
     },
     bioInput: {
@@ -84,6 +92,15 @@ const styles = StyleSheet.create({
       textAlign: 'center',
       marginBottom: 8,
       fontSize: 18,
+    },
+    bioPlaceholderText: {
+      color: Colors.gray500,
+      textAlign: 'center',
+      marginBottom: 8,
+      fontSize: 18,
+    },
+    buttonContainer: {
+      marginTop: 8,
     },
   });
   

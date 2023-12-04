@@ -51,6 +51,41 @@ function ProfileScreen({username}) {
     }
   }, [authCtx.userData]);
 
+  useEffect(() => {
+    if (authCtx.userData && authCtx.userData.uid) {
+      // ref for user bio
+      const userBioRef = ref(db, `users/${authCtx.userData.uid}/userBio`);
+      const bioUnsubscribe = onValue(userBioRef, (snapshot) => {
+        if (snapshot.exists()) {
+          const userBio = snapshot.val().bio;
+          setBio(userBio);
+        } else {
+          // handler incase bio is empty
+          setBio('');
+        }
+      });
+  
+      // ref for profile image
+      const userProfileImageRef = ref(db, `users/${authCtx.userData.uid}/profileimage`);
+      const profileImageUnsubscribe = onValue(userProfileImageRef, (snapshot) => {
+        if (snapshot.exists()) {
+          const imageUrl = snapshot.val().imageUrl;
+          setProfileImage(imageUrl);
+        } else {
+          // case is there is no image availbe 
+          setProfileImage(null);
+        }
+      });
+  
+      return () => {
+        //cleanup listeners
+        bioUnsubscribe();
+        profileImageUnsubscribe();
+      };
+    }
+  }, [authCtx.userData]);
+  
+
   useLayoutEffect(() => {
     nav.setOptions({
       headerTitle: username || "Profile"
@@ -124,6 +159,12 @@ function ProfileScreen({username}) {
     }
   };
 
+  // array of post keys
+  const postKeys = Object.keys(posts);
+
+  // sort posts based by their tiemstamps
+  const sortedPostKeys = postKeys.sort((key1, key2) => posts[key2].timestamp - posts[key1].timestamp);
+
   return (
     <SafeAreaView style={styles.containerWrapper}> 
     <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -143,11 +184,12 @@ function ProfileScreen({username}) {
               <TouchableOpacity
                 onPress={handleImageIconPress}
                 style={styles.editButton}
+                
               >
                 <AntDesign
                   name={isEditingImage ? "close" : "camerao"}
                   size={24}
-                  color={Colors.primary500}
+                  color={Colors.primary800}
                 />
               </TouchableOpacity>
               {isEditingImage && (
@@ -155,7 +197,7 @@ function ProfileScreen({username}) {
                   onPress={pickImage}
                   style={styles.confirmButton}
                 >
-                  <AntDesign name="check" size={24} color={Colors.primary} />
+                  <AntDesign name="check" size={24} color={Colors.primary800} />
                 </TouchableOpacity>
               )}
             </View>
@@ -165,7 +207,7 @@ function ProfileScreen({username}) {
           onSaveBio={handleSaveBio}
         />
       </View>
-        {Object.keys(posts).map((key) => (
+        {sortedPostKeys.map((key) => (
           <TouchableOpacity
             style={styles.postContainer}
             key={key}

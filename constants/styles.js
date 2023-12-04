@@ -48,7 +48,7 @@ export const PostTextStyle = {
     paddingHorizontal: 5,
     paddingTop: 5,
     paddingBottom: 5,
-    //color: Colors.primary800,
+    color: Colors.primary800,
   },
 }
 

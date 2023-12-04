@@ -37,11 +37,17 @@ function PostDisplay() {
     };
   }, []);
 
+  //array of post keys
+  const postKeys = Object.keys(posts);
+
+  // sort posts by timestamps
+  const sortedPostKeys = postKeys.sort((key1, key2) => posts[key2].timestamp - posts[key1].timestamp);
+
   return (
     <SafeAreaView style={styles.containerWrapper}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {Object.keys(posts).length > 0 ? (
-          Object.keys(posts).map((key) => (
+        {sortedPostKeys.length > 0 ? (
+          sortedPostKeys.map((key) => (
             <TouchableOpacity
               style={styles.postContainer}
               key={key}
