@@ -2,6 +2,7 @@ import React,{ useContext, useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Image } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -15,7 +16,6 @@ import AuthContextProvider, { AuthContext } from './components/store/auth-contex
 import HomeScreen from './screens/tabs/HomeScreen';
 import DiscoverScreen from './screens/tabs/DiscoverScreen';
 import CreatePostScreen from './screens/tabs/CreatePostScreen';
-import ChatScreen from './screens/tabs/ChatScreen';
 import ProfileScreen from './screens/tabs/ProfileScreen';
 import IconButton from './components/ui/IconButton';
 import TextPostDisplay from './components/containers/PostDisplay';
@@ -25,15 +25,16 @@ import PartyDetailScreen from './components/containers/PartyDetailScreen';
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
 
+const headerOptions = {
+  headerStyle: { backgroundColor: Colors.primary50 },
+  headerTintColor: Colors.primary800,
+  contentStyle: { backgroundColor: Colors.primary100 },
+};
+
+
 function AuthStack() {
   return (
-    <Stack.Navigator
-      screenOptions={{
-        headerStyle: { backgroundColor: Colors.primary50 },
-        headerTintColor: Colors.primary800,
-        contentStyle: { backgroundColor: Colors.primary100 },
-      }}
-    >
+    <Stack.Navigator screenOptions={headerOptions}>
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Signup" component={SignupScreen} />
     </Stack.Navigator>
@@ -43,25 +44,30 @@ function AuthStack() {
 function AuthenticatedStack() {
 
   return (
-    <Stack.Navigator
-      screenOptions={{
-        headerStyle: { backgroundColor: Colors.primary50 },
-        headerTintColor: Colors.primary800,
-        contentStyle: { backgroundColor: Colors.primary100 },
-      }}
-    >
-      <Stack.Screen 
-      name="ScreensOverview" 
-      component={ScreensOverview} 
-      options={{
-        headerShown: false
+    <Stack.Navigator screenOptions={headerOptions}>
+      <Stack.Screen
+        name="Home"
+        component={ScreensOverview}
+        options={{
+          headerShown: false,
         }}
-        />
-      <Stack.Screen name="Welcome" component={WelcomeScreen} />
+      />
+      <Stack.Screen
+        name="Welcome"
+        component={WelcomeScreen}
+        options={{
+          title: "GameGrove",
+          headerTitle: () => (
+            <Image
+              source={require("./assets/favicon.png")}
+              style={{ width: 30, height: 30 }}
+            />
+          ),
+        }}
+      />
       <Stack.Screen name="TextPostDisplay" component={TextPostDisplay} />
       <Stack.Screen name="PostDetail" component={PostDetailScreen} />
       <Stack.Screen name="PartyDetailScreen" component={PartyDetailScreen} />
-
     </Stack.Navigator>
   );
 }
@@ -103,8 +109,20 @@ console.log("userData in ScreensOverview:", authCtx.userData);
         name="Home"
         component={HomeScreen}
         options={{
+          headerShown: true,
           title: "GameGrove",
           tabBarLabel: "Home",
+          headerLeft: () => (
+            <Image
+              source={require("./assets/headericon.png")}
+              style={{ 
+                width: 50, 
+                height: 50,
+                marginHorizontal: 15,
+                marginBottom: 15,
+               }}
+            />
+          ),
           tabBarIcon: ({color, size}) => (
             <Ionicons name="home" size={size} color={color} />
           ),
@@ -116,6 +134,17 @@ console.log("userData in ScreensOverview:", authCtx.userData);
         options={{
           title: "Discover",
           tabBarLabel: "Discover",
+          headerLeft: () => (
+            <Image
+              source={require("./assets/headericon.png")}
+              style={{ 
+                width: 50, 
+                height: 50,
+                marginHorizontal: 15,
+                marginBottom: 15,
+               }}
+            />
+          ),
           tabBarIcon: ({color, size}) => (
             <Ionicons name="search" size={size} color={color} />
           ),
@@ -127,19 +156,30 @@ console.log("userData in ScreensOverview:", authCtx.userData);
         options={{
           title: "Create Post",
           tabBarLabel: "Create",
+          headerLeft: () => (
+            <Image
+              source={require("./assets/headericon.png")}
+              style={{ 
+                width: 50, 
+                height: 50,
+                marginHorizontal: 15,
+                marginBottom: 15,
+               }}
+            />
+          ),
           tabBarIcon: ({color, size}) => (
             <Ionicons name="add-circle" size={size} color={color} />
           ),
         }}
       />
       {/* <BottomTabs.Screen 
-        name="Chat"
-        component={ChatScreen}
+        name="Notification"
+        component={NotificationScreen}
         options={{
-          title: "Chat",
-          tabBarLabel: "Chat",
+          title: "Notifications",
+          tabBarLabel: "Notifications",
           tabBarIcon: ({color, size}) => (
-            <Ionicons name="chatbubbles" size={size} color={color} />
+            <Ionicons name="" size={size} color={color} />
           ),
         }}
       /> */}
@@ -149,6 +189,17 @@ console.log("userData in ScreensOverview:", authCtx.userData);
         options={{
           title: "Profile",
           tabBarLabel: "Profile",
+          headerLeft: () => (
+            <Image
+              source={require("./assets/headericon.png")}
+              style={{ 
+                width: 50, 
+                height: 50,
+                marginHorizontal: 15,
+                marginBottom: 15,
+               }}
+            />
+          ),
           headerRight: ({tintColor}) => (
             <IconButton icon="exit" color={tintColor} size={30} onPress={authCtx.logout}/>
           ),
