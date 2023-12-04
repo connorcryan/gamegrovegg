@@ -1,11 +1,12 @@
 import { db } from '../../firebase-config';
 import { ref, push, set, get, query, orderByChild, equalTo } from 'firebase/database';
 import { useState } from "react";
-import { StyleSheet, TextInput, View, Text, SafeAreaView, TouchableWithoutFeedback, Keyboard, Alert, Image } from "react-native";
+import { StyleSheet, TextInput, View, Text, SafeAreaView, TouchableWithoutFeedback, Keyboard, Alert, Image, TouchableOpacity } from "react-native";
 import * as ImagePicker from 'expo-image-picker';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { Colors } from "../../constants/styles";
+import { Colors, FormStyles, PostTextStyle } from "../../constants/styles";
 import Button from '../ui/Button';
+import { Ionicons } from '@expo/vector-icons';
 
 function CreatePartyForm({ onClose }) {
 
@@ -126,12 +127,16 @@ function CreatePartyForm({ onClose }) {
 
   return (
     <SafeAreaView style={styles.container}>
+      <View>
       <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-        <View style={styles.container}>
-          <Button onPress={onClose}></Button>
+        <View style={styles.formContainer}>
+          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+              <Ionicons name="md-close" size={32} />
+            </TouchableOpacity>
           <Text style={styles.title}>Create your post!</Text>
           <TextInput
             placeholder="Party Title"
+            placeholderTextColor={Colors.gray500}
             value={presentPartyTitle}
             style={[styles.inputTitle, styles.text]}
             keyboardType="default"
@@ -142,6 +147,7 @@ function CreatePartyForm({ onClose }) {
           />
           <TextInput
             placeholder="Party Bio"
+            placeholderTextColor={Colors.gray500}
             value={presentPartyBio}
             style={[styles.inputText, styles.text]}
             keyboardType="default"
@@ -153,13 +159,21 @@ function CreatePartyForm({ onClose }) {
           {presentPartyImage ? (
             <Image source={{ uri: presentPartyImage }} style={styles.selectedImage}/>
           ) : null}
-          <Button title="Select Image" onPress={handleImagePicker} />   
+          <TouchableOpacity
+              onPress={handleImagePicker}
+              style={styles.createPostButton}
+            >
+              <Text style={styles.buttonText}>Select Image</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleAddNewPost}
+              style={styles.createPostButton}
+            >
+              <Text style={styles.buttonText}>Create Post</Text>
+           </TouchableOpacity>  
+            
         </View>
       </TouchableWithoutFeedback>
-      <View>
-        <View>
-          <Button onPress={handleAddNewPost}> Create Party </Button>
-        </View>
       </View>
     </SafeAreaView>
   );
@@ -168,62 +182,39 @@ function CreatePartyForm({ onClose }) {
 export default CreatePartyForm;
 
 const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      maxHeight: "90%",
-      //justifyContent: 'center',
-      alignItems: 'center', 
-      marginTop: 50,
-      marginHorizontal: 10,
-      backgroundColor: Colors.accent500,
-      borderRadius: 12,
-      // elevation: 2,
-      // shadowColor: 'white',
-      // shadowOffset: { width: 1, height: 1 },
-      // shadowOpacity: 0.25,
-      // shadowRadius: 4,
-    },
-    title: {
-      //alignItems: 'center',
-      fontSize: 24,
-      fontWeight: 'bold',
-      marginBottom: 40,
-      paddingHorizontal: 10,
-      paddingTop: 10,
-      paddingBottom: 5,
-      color: Colors.primary700,
-    },
-    text: {
-      fontSize: 16,
-      paddingHorizontal: 10,
-      paddingTop: 5,
-      paddingBottom: 10,
-      minWidth: '80%',
-      maxWidth: '80%',
-      maxHeight: 100,
-      color: Colors.primary800,
+  container: {
+    ...FormStyles.container,
   },
-    inputTitle: {
-        backgroundColor: Colors.accent400,
-        flexWrap: 'wrap',
-        padding: 10,
-        borderRadius: 12,
-        width: "90%",
-        marginTop: 15,
-    },
-    inputText: {
-      backgroundColor: Colors.accent400,
-      flexWrap: 'wrap',
-      padding: 10,
-      borderRadius: 12,
-      minHeight: 200,
-      width: "90%",
-      marginTop: 15,
-      //color: "#000",
+  formContainer: {
+    ...FormStyles.formContainer,
   },
+  title: {
+    ...FormStyles.title,
+  },
+  text: {
+    ...FormStyles.text,
+},
+  inputTitle: {
+    ...FormStyles.inputTitle,
+  },
+  inputText: {
+    ...FormStyles.inputText,
+},
+closeButton: {
+  ...FormStyles.closeButton
+},
+createPostButton: {
+  ...FormStyles.createPostButton,
+},
+buttonText: {
+  ...FormStyles.buttonText,
+},
   selectedImage: {
     width: 200,
     height: 200,
+    borderWidth: 4,
+    borderColor: Colors.primary200,
+    borderRadius: 10,
     resizeMode: 'cover',
     marginVertical: 10,
   },

@@ -4,9 +4,10 @@ import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'fire
 import { useState, useContext, useEffect, useRef } from "react";
 import { AuthContext } from '../store/auth-context';
 import { StyleSheet, TextInput, View, Text, SafeAreaView, TouchableWithoutFeedback, Keyboard, Alert, Image, Dimensions, TouchableOpacity } from "react-native";
-import { Colors } from "../../constants/styles";
+import { Colors, FormStyles, PostTextStyle, PartySearch } from "../../constants/styles";
 import * as ImagePicker from 'expo-image-picker';
 import Button from '../ui/Button';
+import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get("screen");
 
@@ -170,13 +171,18 @@ function ImagePostForm({onClose}) {
 
   return (
     <SafeAreaView style={styles.container}>
+      <View>
       <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-        <View style={styles.container}>
-        <Button onPress={onClose}></Button>
+        <View style={styles.formContainer}>
+        <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+              <Ionicons name="md-close" size={32} />
+            </TouchableOpacity>
+            <Text style={styles.title}>Create your post!</Text> 
         <TextInput
             ref={presentPostPartyInputRef}  
             style={[styles.inputTitle, styles.text]}
-            placeholder="Search by party"
+            placeholder="Party..."
+            placeholderTextColor={Colors.gray500}
             value={searchKeyword}
             onChangeText={(text) => {
               setSearchKeyword(text);
@@ -200,6 +206,7 @@ function ImagePostForm({onClose}) {
         )}
           <TextInput
             placeholder="Post Title"
+            placeholderTextColor={Colors.gray500}
             value={presentPostTitle}
             style={[styles.inputTitle, styles.text]}
             keyboardType="default"
@@ -211,6 +218,7 @@ function ImagePostForm({onClose}) {
         
           <TextInput
             placeholder="Post content..."
+            placeholderTextColor={Colors.gray500}
             value={presentPostText}
             style={[styles.inputText, styles.text]}
             keyboardType="default"
@@ -222,13 +230,23 @@ function ImagePostForm({onClose}) {
           {presentPostImage ? (
             <Image source={{ uri: presentPostImage }} style={styles.selectedImage}/>
           ) : null}
-          <Button title="Select Image" onPress={handleImagePicker} />         
+          
+          <TouchableOpacity
+              onPress={handleImagePicker}
+              style={styles.createPostButton}
+            >
+              <Text style={styles.buttonText}>Select Image</Text>
+            </TouchableOpacity>
+          <TouchableOpacity
+              onPress={handleAddNewPost}
+              style={styles.createPostButton}
+            >
+              <Text style={styles.buttonText}>Create Post</Text>
+           </TouchableOpacity>   
         </View>
+        
       </TouchableWithoutFeedback>
       <View>
-        <View>
-        <Button onPress={handleAddNewPost}> Create Post </Button>
-        </View>
         {/* <View style={styles.button}>
           <Button
             title="Remove Post"
@@ -238,6 +256,7 @@ function ImagePostForm({onClose}) {
           />
         </View> */}
       </View>
+      </View>
     </SafeAreaView>
   );
 }
@@ -245,92 +264,53 @@ function ImagePostForm({onClose}) {
 export default ImagePostForm;
 
 const styles = StyleSheet.create({
+  closeButton: {
+    ...FormStyles.closeButton
+  },
+  createPostButton: {
+    ...FormStyles.createPostButton,
+  },
+  buttonText: {
+    ...FormStyles.buttonText,
+  },
     container: {
-      flex: 1,
-      maxHeight: "90%",
-      //justifyContent: 'center',
-      alignItems: 'center', 
-      marginTop: 50,
-      marginHorizontal: 10,
-      backgroundColor: Colors.accent500,
-      borderRadius: 12,
-      // elevation: 2,
-      // shadowColor: 'white',
-      // shadowOffset: { width: 1, height: 1 },
-      // shadowOpacity: 0.25,
-      // shadowRadius: 4,
+      ...FormStyles.container,
+    },
+    formContainer: {
+      ...FormStyles.formContainer,
     },
     title: {
-      //alignItems: 'center',
-      fontSize: 24,
-      fontWeight: 'bold',
-      marginBottom: 40,
-      paddingHorizontal: 10,
-      paddingTop: 10,
-      paddingBottom: 5,
-      color: Colors.primary700,
+      ...FormStyles.title,
     },
     text: {
-      fontSize: 16,
-      paddingHorizontal: 10,
-      paddingTop: 5,
-      paddingBottom: 10,
-      minWidth: '80%',
-      maxWidth: '80%',
-      maxHeight: 100,
-      color: Colors.primary800,
+      ...FormStyles.text,
   },
     inputTitle: {
-        backgroundColor: Colors.accent400,
-        flexWrap: 'wrap',
-        padding: 10,
-        borderRadius: 12,
-        width: "90%",
-        marginTop: 15,
+      ...FormStyles.inputTitle,
     },
     inputText: {
-      backgroundColor: Colors.accent400,
-      flexWrap: 'wrap',
-      padding: 10,
-      borderRadius: 12,
-      minHeight: 50,
-      width: "90%",
-      marginTop: 15,
-      //color: "#000",
+      ...FormStyles.inputText,
   },
   selectedImage: {
     width: 200,
     height: 200,
+    borderWidth: 4,
+    borderColor: Colors.primary200,
+    borderRadius: 10,
     resizeMode: 'cover',
     marginVertical: 10,
   },
-    button: {
-      borderRadius: 12,
-      padding: 5,
-      marginTop: 10,
-      marginBottom: 30,
+
+    partyTitle: {
+      ...PostTextStyle.headings,
     },
     partiesSection: {
-      width: width, 
-      padding: 10,
-      backgroundColor: Colors.primary100,
+      ...FormStyles.partiesSection,
     },
     partyContainer: {
-      marginBottom: 10,
-      borderRadius: 12,
-      backgroundColor: Colors.primary50,
-      padding: 10,
-      elevation: 2,
-      shadowColor: 'black',
-      shadowOffset: { width: 1, height: 1 },
-      shadowOpacity: 0.25,
-      shadowRadius: 4,
+      ...FormStyles.partyContainer,
     },
     partyName: {
-      fontSize: 16,
-        paddingHorizontal: 5,
-        paddingTop: 5,
-        paddingBottom: 5,
-        color: Colors.primary800,
+      ...PartySearch.partyName,
     }
 });

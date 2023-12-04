@@ -1,9 +1,8 @@
 import { db } from '../../firebase-config';
-import { ref, push, remove, set, get, onValue } from 'firebase/database';
+import { ref, push, set, get, onValue } from 'firebase/database';
 import { useState, useContext, useEffect, useRef } from "react";
 import { StyleSheet, TextInput, View, Dimensions, Text, SafeAreaView, TouchableWithoutFeedback, Keyboard, Alert, ScrollView, TouchableOpacity } from "react-native";
 import { Colors, FormStyles, PostTextStyle, PartySearch } from "../../constants/styles";
-import Button from '../ui/Button';
 import { AuthContext } from '../store/auth-context';
 import { Ionicons } from '@expo/vector-icons';
 
