@@ -1,16 +1,16 @@
-import { useState } from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useState } from "react";
+import { Alert, StyleSheet, View } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
-import FlatButton from '../ui/FlatButton';
-import AuthForm from './AuthForm';
-import { Colors } from '../../constants/styles';
+import FlatButton from "../ui/FlatButton";
+import AuthForm from "./AuthForm";
+import { Colors } from "../../constants/styles";
 
 //component receives two props islogin and onauthenticate
 function AuthContent({ isLogin, onAuthenticate }) {
   //usenavigation is a hook used to navigate between screens
   const navigation = useNavigation();
-  //usestate hook used to manage the credantialisinvalid state 
+  //usestate hook used to manage the credantialisinvalid state
   //which initally starts as false until input is received
   const [credentialsInvalid, setCredentialsInvalid] = useState({
     email: false,
@@ -22,33 +22,51 @@ function AuthContent({ isLogin, onAuthenticate }) {
   //depending on what screen is currently active. This uses the navigation component
   function switchAuthModeHandler() {
     if (isLogin) {
-      navigation.replace('Signup');
+      navigation.replace("Signup");
     } else {
-      navigation.replace('Login');
+      navigation.replace("Login");
     }
   }
   //handles form submission an authentication, checks input and issues allerts
   //if inputs are invalid
   function submitHandler(credentials) {
-    let { username, email, confirmEmail, password, confirmPassword } = credentials;
+    let { username, email, confirmEmail, password, confirmPassword } =
+      credentials;
 
-    username = username.trim();
+    username = username ? username.trim() : '';
     email = email.trim();
     password = password.trim();
 
     const usernameIsValid = username.length > 3;
-    const emailIsValid = email.includes('@');
+    const emailIsValid = email.includes("@");
     const passwordIsValid = password.length > 6;
     const emailsAreEqual = email === confirmEmail;
     const passwordsAreEqual = password === confirmPassword;
 
-    if (
-      !usernameIsValid ||
-      !emailIsValid ||
-      !passwordIsValid ||
-      (!isLogin && (!emailsAreEqual || !passwordsAreEqual))
-    ) {
-      Alert.alert('Invalid input', 'Please check your entered credentials.');
+    let invalidInputs;
+
+    if (isLogin) {
+      // Logic for login screen
+      invalidInputs = !emailIsValid || !passwordIsValid;
+    } else {
+      // Logic for signup screen
+      invalidInputs =
+        !usernameIsValid ||
+        !emailIsValid ||
+        !passwordIsValid ||
+        !emailsAreEqual ||
+        !passwordsAreEqual;
+    }
+
+    console.log("usernameIsValid:", usernameIsValid);
+    console.log("emailIsValid:", emailIsValid);
+    console.log("passwordIsValid:", passwordIsValid);
+    console.log("emailsAreEqual:", emailsAreEqual);
+    console.log("passwordsAreEqual:", passwordsAreEqual);
+    console.log("invalidInputs:", invalidInputs);
+
+    if (invalidInputs) {
+      Alert.alert("Invalid input", "Please check your entered credentials.");
       setCredentialsInvalid({
         username: !usernameIsValid,
         email: !emailIsValid,
@@ -58,6 +76,7 @@ function AuthContent({ isLogin, onAuthenticate }) {
       });
       return;
     }
+
     onAuthenticate({ username, email, password });
   }
 
@@ -70,7 +89,7 @@ function AuthContent({ isLogin, onAuthenticate }) {
       />
       <View style={styles.buttons}>
         <FlatButton onPress={switchAuthModeHandler}>
-          {isLogin ? 'Create a new user' : 'Log in instead'}
+          {isLogin ? "Create a new user" : "Log in instead"}
         </FlatButton>
       </View>
     </View>
@@ -90,7 +109,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary200,
     backgroundColor: Colors.primary50,
     elevation: 2,
-    shadowColor: 'black',
+    shadowColor: "black",
     shadowOffset: { width: 1, height: 1 },
     shadowOpacity: 0.35,
     shadowRadius: 4,

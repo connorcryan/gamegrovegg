@@ -218,6 +218,10 @@ function Root() {
   useEffect(() => {
     async function fetchToken() {
         const storedToken = await AsyncStorage.getItem('token');
+        const storedUserData = await AsyncStorage.getItem('userData');
+
+        console.log('Stored token:', storedToken);
+        console.log('Stored userData:', storedUserData);
 
         if (storedToken) {
             authCtx.authenticate(storedToken);
@@ -237,6 +241,8 @@ useEffect(() => {
   }
   checkAsyncStorage();
 }, []); // empty dependency array runs once after the initial render
+
+console.log('authCtx in the root:', authCtx);
 
 if (isTryingLogin) {
   return <AppLoading />;

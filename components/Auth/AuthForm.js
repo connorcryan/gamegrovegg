@@ -45,13 +45,22 @@ function AuthForm({ isLogin, onSubmit, credentialsInvalid }) {
 
   //call the onSubmit prop with the enetered values the updateInputHandler
   function submitHandler() {
-    onSubmit({
-      username: enteredUsername,
-      email: enteredEmail,
-      confirmEmail: enteredConfirmEmail,
-      password: enteredPassword,
-      confirmPassword: enteredConfirmPassword,
-    });
+    if (isLogin) {
+      // for login only pass email and password
+      onSubmit({
+        email: enteredEmail,
+        password: enteredPassword,
+      });
+    } else {
+      //for signup pass all fields
+      onSubmit({
+        username: enteredUsername,
+        email: enteredEmail,
+        confirmEmail: enteredConfirmEmail,
+        password: enteredPassword,
+        confirmPassword: enteredConfirmPassword,
+      });
+    }
   }
 
   //renders the necessary input component based on if it is Login screen

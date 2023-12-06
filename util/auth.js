@@ -1,5 +1,6 @@
 import axios from 'axios';
-import { getDatabase, ref, set } from '@firebase/database';
+import { getDatabase, ref, set, get } from '@firebase/database';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const API_KEY = 'AIzaSyDGxkft3tFTX-OtHdQoBEALytG3LOyBOx8';
 
@@ -14,7 +15,7 @@ async function authenticate(mode, email, password) {
         });
         
         const { idToken, localId } = response.data;
-    
+        await AsyncStorage.setItem('token', idToken);
         return {token: idToken, uid: localId};
 
       } catch (error) {
@@ -62,6 +63,38 @@ async function storeUserDataInDatabase(uid, userData) {
   }
 }
 
-export function login(email, password) {
-    return authenticate('signInWithPassword', email, password);
+export async function login(authCtx, email, password) {
+  try {
+    const authData = await authenticate('signInWithPassword', email, password);
+    const { token, uid } = authData;
+    // log the received token
+    console.log('Received Token:', token);
+    const userData = await getUserDataFromDatabase(uid);
+    // ensure that the token is stored
+    authCtx.authenticate(token, userData);
+    return { token, uid };
+} catch (error) {
+    // Handle login error
+    throw error;
+}
+async function getUserDataFromDatabase(uid) {
+  const db = getDatabase();
+  const userRef = ref(db, `users/${uid}`);
+
+  try {
+    const snapshot = await get(userRef);
+    if (snapshot.exists()) {
+      const userData = snapshot.val();
+      console.log('User Data from Database:', userData);
+      return userData;
+    } else {
+      console.warn('User does not exist in the database.');
+      return null;
+    }
+  } catch (error) {
+    console.error('Error fetching user data from the database:', error);
+    throw error;
+  }
+}
+
 }

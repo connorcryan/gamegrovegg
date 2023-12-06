@@ -20,7 +20,7 @@ function AuthContextProvider({children}) {
         AsyncStorage.getItem('token')
           .then((token) => {
             //set empty string if token is null
-            setAuthToken(token || ''); 
+            setAuthToken(token || null); 
           })
           .catch((error) => {
             console.error('Error retrieving token from AsyncStorage:', error);
