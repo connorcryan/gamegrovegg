@@ -36,7 +36,7 @@ export async function createUser(username, email, password) {
    const { token, uid } = authData;
   
    const userData = { uid, username };
-   await storeUserDataInDatabase(uid, { uid, userData});
+   await storeUserDataInDatabase( uid, userData);
 
    return { token, userData };
 }

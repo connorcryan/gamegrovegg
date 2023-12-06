@@ -365,7 +365,7 @@ function PostDetailScreen({ route }) {
           />
           <TouchableOpacity
             style={styles.button}
-            onPress={handleCommentPress} // Call your comment press handler here
+            onPress={handleCommentPress}
           >
             <Text style={styles.buttonText}>Comment</Text>
           </TouchableOpacity>
@@ -377,7 +377,13 @@ function PostDetailScreen({ route }) {
             <Text style={styles.comment}>{comment.text}</Text>
             <View style={styles.commentDetailsContainer}>
               <Text style={styles.commentUsername}>{comment.username}</Text>
-              
+              {comment.username === userData?.username && (
+                <TouchableOpacity
+                  onPress={() => handleDeleteComment(comment.id)}
+                >
+                  <Ionicons name="trash" size={24} color={Colors.error500} />
+                </TouchableOpacity>
+              )}
               <TouchableOpacity
                 onPress={() => setSelectedCommentId(comment.id)}
               >
@@ -385,16 +391,7 @@ function PostDetailScreen({ route }) {
               </TouchableOpacity>
             </View>
           </View>
-          {comment.replies && typeof comment.replies === "object" && (
-            <View style={styles.commentDetailsContainer}> 
-            {comment.username === userData?.username && (
-                <TouchableOpacity
-                  onPress={() => handleDeleteComment(comment.id)}
-                >
-                  <Ionicons name="trash" size={24} color={Colors.error500} style={styles.deleteButton} />
-                </TouchableOpacity>
-              )}
-              <TouchableOpacity
+          <TouchableOpacity
                 onPress={() => handleToggleRepliesVisibility(comment.id)}
                 style={styles.toggleRepliesButton}
               >
@@ -402,6 +399,8 @@ function PostDetailScreen({ route }) {
                   {comment.showReplies ? "Hide Replies" : "Show Replies"}
                 </Text>
               </TouchableOpacity>
+          {comment.replies && typeof comment.replies === "object" && (
+            <View> 
               {comment.showReplies && (
                 <View style={styles.replyContainer}>
                   {Object.values(comment.replies).map((reply) => (
@@ -618,7 +617,6 @@ const styles = StyleSheet.create({
   replyUsername: {
     fontSize: 14,
     fontWeight: 'bold',
-    paddingHorizontal: 15,
     paddingBottom: 5,
     color: Colors.primary700,
   },
