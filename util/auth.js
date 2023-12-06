@@ -20,14 +20,14 @@ async function authenticate(mode, email, password) {
       } catch (error) {
         console.error('Authentication error:', error.message);
         console.error('Request payload:', error.config.data);
-        console.error('Response:', error.response.data); // Log the entire response
-        console.error('Status Code:', error.response.status); // Log the status code
+        console.error('Response:', error.response.data); 
+        console.error('Status Code:', error.response.status);
 
         if (error.response.data.error.message === 'EMAIL_EXISTS') {
             throw new Error('Email already exists. Please login or use a different email.');
           }
           
-        throw error; // Re-throw the error
+        throw error;
       }
 }
 
@@ -47,12 +47,11 @@ async function storeUserDataInDatabase(uid, userData) {
   try {
       const userRef = ref(db, `users/${uid}`);
       
-      // Check if userData is not undefined before storing
+      // chec if userData is not undefined 
       if (userData && userData.username) {
           await set(userRef, {
               uid: uid,
               username: userData.username,
-              // Add other user data as needed
           });
           console.log("User data stored in the database!");
       } else {
