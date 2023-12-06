@@ -635,12 +635,12 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     //fontSize: 14,
-    fontWeight: 'bold',
+    //fontWeight: 'bold',
     justifyContent: 'flex-start',
     alignSelf: 'flex-start',
     paddingHorizontal: 15,
     paddingBottom: 10,
-    color: Colors.primary800,// Adjust as needed
+    //color: Colors.primary800,
   },
   toggleRepliesButton: {
     maxWidth: 100,

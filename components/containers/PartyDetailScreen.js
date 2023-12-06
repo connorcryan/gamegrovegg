@@ -5,7 +5,7 @@ import { View, Text, StyleSheet, Image, ScrollView, Dimensions, TouchableOpacity
 import { useNavigation } from "@react-navigation/native";
 import { Colors, PostTextStyle, Posts } from "../../constants/styles";
 import { Video } from 'expo-av';
-import { orderByChild, ref, query, get } from "firebase/database";
+import { orderByChild, ref, query, get, onValue } from "firebase/database";
 
 const { width } = Dimensions.get("screen");
 
@@ -15,6 +15,7 @@ function PartyDetailScreen  ({route}) {
     const [partyPosts, setPartyPosts] = useState([]);
     const [matchingParty, setMatchingParty] = useState(null);
     const [imageHeight, setImageHeight] = useState(0);
+    const [posts, setPosts] = useState({});
 
     const handlePostPress = (post) => {
       nav.navigate("PostDetail", {
@@ -78,6 +79,8 @@ function PartyDetailScreen  ({route}) {
         if (matchingPartyData.posts) {
           // convert posts to an array
           const postsArray = Object.values(matchingPartyData.posts);
+          // sort posts based on timestamp with newest first
+          const sortedPostsArray = postsArray.sort((post1, post2) => post2.timestamp - post1.timestamp);
           setPartyPosts(postsArray);
         } else {
           console.log("No posts found for party", matchingPartyData.party);

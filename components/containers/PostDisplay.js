@@ -32,7 +32,7 @@ function PostDisplay() {
     });
 
     return () => {
-      // Cleanup the listener when the component unmounts
+      
       unsubscribe();
     };
   }, []);

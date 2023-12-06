@@ -71,11 +71,11 @@ export const Posts = {
     maxWidth: width - 100,
   },
   postImage: {
-    width: 70,
-    height: 70,
+    width: 60,
+    height: 60,
     borderRadius: 6,
     position: 'absolute',
-    top: 10,
+    top: 8,
     right: 10,
   },
   postVideo: {
