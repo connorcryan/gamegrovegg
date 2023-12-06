@@ -323,7 +323,7 @@ function PostDetailScreen({ route }) {
   const handleToggleRepliesVisibility = (commentId) => {
     setComments((prevComments) =>
       prevComments.map((comment) =>
-        comment.id === commentId
+        comment.id === commentId || comment.showReplies
           ? { ...comment, showReplies: !comment.showReplies }
           : comment
       )
@@ -363,10 +363,7 @@ function PostDetailScreen({ route }) {
             value={commentInput}
             onChangeText={(text) => setCommentInput(text)}
           />
-          <TouchableOpacity
-            style={styles.button}
-            onPress={handleCommentPress}
-          >
+          <TouchableOpacity style={styles.button} onPress={handleCommentPress}>
             <Text style={styles.buttonText}>Comment</Text>
           </TouchableOpacity>
         </View>
@@ -381,7 +378,7 @@ function PostDetailScreen({ route }) {
                 <TouchableOpacity
                   onPress={() => handleDeleteComment(comment.id)}
                 >
-                  <Ionicons name="trash" size={24} color={Colors.error500} />
+                  <Ionicons name="trash" size={24} color={Colors.primary800} />
                 </TouchableOpacity>
               )}
               <TouchableOpacity
@@ -392,15 +389,15 @@ function PostDetailScreen({ route }) {
             </View>
           </View>
           <TouchableOpacity
-                onPress={() => handleToggleRepliesVisibility(comment.id)}
-                style={styles.toggleRepliesButton}
-              >
-                <Text style={styles.toggleRepliesButtonText}>
-                  {comment.showReplies ? "Hide Replies" : "Show Replies"}
-                </Text>
-              </TouchableOpacity>
+            onPress={() => handleToggleRepliesVisibility(comment.id)}
+            style={styles.toggleRepliesButton}
+          >
+            <Text style={styles.toggleRepliesButtonText}>
+              {comment.showReplies ? "Hide Replies" : "Show Replies"}
+            </Text>
+          </TouchableOpacity>
           {comment.replies && typeof comment.replies === "object" && (
-            <View> 
+            <View>
               {comment.showReplies && (
                 <View style={styles.replyContainer}>
                   {Object.values(comment.replies).map((reply) => (
@@ -417,7 +414,7 @@ function PostDetailScreen({ route }) {
                                 handleDeleteReply(comment.id, reply.replyId)
                               }
                             >
-                              <Text style={styles.deleteButton}>Delete</Text>
+                              <Ionicons name="trash" size={24} color={Colors.primary800} />
                             </TouchableOpacity>
                           )}
                         </View>
@@ -430,6 +427,16 @@ function PostDetailScreen({ route }) {
           )}
         </View>
       ))}
+
+      {Object.values(comments).some((comment) => comment.showReplies) && (
+        <TouchableOpacity
+          onPress={() => handleToggleRepliesVisibility(null)}
+          style={styles.toggleRepliesButton}
+        >
+          <Text style={styles.toggleRepliesButtonText}>Hide All Replies</Text>
+        </TouchableOpacity>
+      )}
+
       {selectedCommentId &&
         comments.find((comment) => comment.id === selectedCommentId) && (
           <View>
