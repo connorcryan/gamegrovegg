@@ -6,16 +6,20 @@ import FlatButton from '../ui/FlatButton';
 import AuthForm from './AuthForm';
 import { Colors } from '../../constants/styles';
 
+//component receives two props islogin and onauthenticate
 function AuthContent({ isLogin, onAuthenticate }) {
+  //usenavigation is a hook used to navigate between screens
   const navigation = useNavigation();
-
+  //usestate hook used to manage the credantialisinvalid state 
+  //which initally starts as false until input is received
   const [credentialsInvalid, setCredentialsInvalid] = useState({
     email: false,
     password: false,
     confirmEmail: false,
     confirmPassword: false,
   });
-
+  //function that replaces the login and signup screen with one another
+  //depending on what screen is currently active. This uses the navigation component
   function switchAuthModeHandler() {
     if (isLogin) {
       navigation.replace('Signup');
@@ -23,7 +27,8 @@ function AuthContent({ isLogin, onAuthenticate }) {
       navigation.replace('Login');
     }
   }
-
+  //handles form submission an authentication, checks input and issues allerts
+  //if inputs are invalid
   function submitHandler(credentials) {
     let { username, email, confirmEmail, password, confirmPassword } = credentials;
 

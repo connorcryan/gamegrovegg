@@ -5,7 +5,9 @@ import { Colors } from '../../constants/styles';
 import Button from '../ui/Button';
 import Input from './Input';
 
+//auth form takes three props
 function AuthForm({ isLogin, onSubmit, credentialsInvalid }) {
+  //useState hook to manage the states of the input fields starting as empty
   const [enteredUsername, setEnteredUsername] = useState('');
   const [enteredEmail, setEnteredEmail] = useState('');
   const [enteredConfirmEmail, setEnteredConfirmEmail] = useState('');
@@ -20,6 +22,7 @@ function AuthForm({ isLogin, onSubmit, credentialsInvalid }) {
     confirmPassword: passwordsDontMatch,
   } = credentialsInvalid;
 
+  //swtich statement to update the corresponding states with inputType
   function updateInputValueHandler(inputType, enteredValue) {
     switch (inputType) {
       case 'username':
@@ -40,6 +43,7 @@ function AuthForm({ isLogin, onSubmit, credentialsInvalid }) {
     }
   }
 
+  //call the onSubmit prop with the enetered values the updateInputHandler
   function submitHandler() {
     onSubmit({
       username: enteredUsername,
@@ -50,6 +54,8 @@ function AuthForm({ isLogin, onSubmit, credentialsInvalid }) {
     });
   }
 
+  //renders the necessary input component based on if it is Login screen
+  //or sign up screen
   return (
     <View >
       <View >

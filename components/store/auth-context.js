@@ -15,25 +15,27 @@ function AuthContextProvider({children}) {
     const [userData, setUserData] = useState(null);
 
     useEffect(() => {
-        // Retrieve token from AsyncStorage
+        //retrieve token from AsyncStorage
         AsyncStorage.getItem('token')
           .then((token) => {
-            setAuthToken(token || ''); // Set empty string if token is null or undefined
+            //set empty string if token is null
+            setAuthToken(token || ''); 
           })
           .catch((error) => {
             console.error('Error retrieving token from AsyncStorage:', error);
           });
     
-        // Retrieve userData from AsyncStorage
+        //retrieve userData from AsyncStorage
         AsyncStorage.getItem('userData')
           .then((userDataString) => {
             const parsedUserData = JSON.parse(userDataString);
-            setUserData(parsedUserData || null); // Set null if userData is null or undefined
+             //set null if userData is null
+            setUserData(parsedUserData || null);
           })
           .catch((error) => {
             console.error('Error retrieving userData from AsyncStorage:', error);
           });
-      }, []); // Empty dependency array to run the effect only once on mount
+      }, []); 
 
     function authenticate(token, userData) {
       console.log("Received token for AsyncStorage:", token);

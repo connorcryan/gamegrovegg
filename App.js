@@ -7,12 +7,12 @@ import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AppLoading from 'expo-app-loading';
+import { Colors } from './constants/styles';
+import AuthContextProvider, { AuthContext } from './components/store/auth-context';
 
 import LoginScreen from './screens/LoginScreen';
 import SignupScreen from './screens/SignupScreen';
 import WelcomeScreen from './screens/WelcomeScreen';
-import { Colors } from './constants/styles';
-import AuthContextProvider, { AuthContext } from './components/store/auth-context';
 import HomeScreen from './screens/tabs/HomeScreen';
 import DiscoverScreen from './screens/tabs/DiscoverScreen';
 import CreatePostScreen from './screens/tabs/CreatePostScreen';
@@ -42,7 +42,6 @@ function AuthStack() {
 }
 
 function AuthenticatedStack() {
-
   return (
     <Stack.Navigator screenOptions={headerOptions}>
       <Stack.Screen
@@ -213,7 +212,7 @@ console.log("userData in ScreensOverview:", authCtx.userData);
 }
 
 function Root() {
-  const [isTryingLogin, setIsTryingLogin] =useState(true);
+  const [isTryingLogin, setIsTryingLogin] = useState(true);
   const authCtx = useContext(AuthContext);
 
   useEffect(() => {
@@ -229,21 +228,19 @@ function Root() {
 }, []);
 
 useEffect(() => {
-  // Additional useEffect for checking AsyncStorage values
+  // additonal useEffect for checking AsyncStorage values
   async function checkAsyncStorage() {
     const storedToken = await AsyncStorage.getItem('token');
     const storedUserData = await AsyncStorage.getItem('userData');
     console.log("Stored token:", storedToken);
     console.log("Stored userData:", storedUserData);
   }
-
   checkAsyncStorage();
-}, []); // Empty dependency array to run only once after the initial render
+}, []); // empty dependency array runs once after the initial render
 
 if (isTryingLogin) {
   return <AppLoading />;
 }
-
 return <Navigation />
 }
 

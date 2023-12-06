@@ -7,7 +7,6 @@ import { Alert } from 'react-native';
 import { AuthContext } from '../components/store/auth-context';
 
 function LoginScreen() {
-
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
   const authCtx = useContext(AuthContext);
@@ -21,14 +20,11 @@ function LoginScreen() {
       Alert.alert('Authentication failed, please check your credentials!');
       setIsAuthenticating(false);
     }
-
-    
   }
 
   if (isAuthenticating) {
     return <LoadingOverlay message='Creating user...'/>
   }
-
   return <AuthContent isLogin onAuthenticate={loginHandler}/>;
 }
 
