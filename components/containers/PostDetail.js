@@ -16,7 +16,7 @@ function PostDetailScreen({ route }) {
   const nav = useNavigation(); // for navigation to parties
   const authContext = useContext(AuthContext); //authctx contains autenticated ifo and userdata
   const [userData, setUserData] = useState(null); //get user data
-  const [imageHeight, setImageHeight] = useState(0); //for image posts  
+  const [imageHeight, setImageHeight] = useState(0); //for Aimage posts  
   //adding comments
   const [commentInput, setCommentInput] = useState(""); 
   const [comments, setComments] = useState([]);
@@ -80,7 +80,6 @@ function PostDetailScreen({ route }) {
   //to the unique key in firebase database
   useEffect(() => {
     const postCommentsRef = ref(db, `posts/${postID}/comments`);
-  
     const unsubscribe = onValue(postCommentsRef, (snapshot) => {
       const commentsData = snapshot.val();
       if (commentsData) {
@@ -94,7 +93,6 @@ function PostDetailScreen({ route }) {
         setComments([]);
       }
     });
-  
     return () => {
       unsubscribe();
     };
@@ -227,11 +225,10 @@ function PostDetailScreen({ route }) {
   //func to delete comment
   const handleDeleteComment = async (commentId) => {
     try {
-      // Delete comment from the database
+      //delete comment from database
       const commentRef = ref(db, `posts/${postID}/comments/${commentId}`);
       await remove(commentRef);
-  
-      // Update the comments state to reflect the deletion
+      //update the comments state
       setComments((prevComments) =>
         prevComments.filter((comment) => comment.id !== commentId)
       );
@@ -244,13 +241,12 @@ function PostDetailScreen({ route }) {
   const handleDeleteReply = async (commentId, replyId) => {
     console.log("Deleting reply with commentId:", commentId, "and replyId:", replyId);
     try {
-      // Delete comment from the database
+      //delete reply from database
       const replyRef = ref(db, `posts/${postID}/comments/${commentId}/replies/${replyId}`);
       console.log("Deleting reply at:", replyRef.toString());
       await remove(replyRef);
       console.log("Reply deleted successfully.");
-  
-      // Update the replies state to reflect the deletion
+      //update replies state
       setComments((prevReplies) =>
         prevReplies.filter((reply) => reply.id !== replyId)
       );
@@ -275,7 +271,6 @@ function PostDetailScreen({ route }) {
         const postCommentsRef = ref(db, `posts/${commentData.postID}/comments`);
         console.log('Post to comment on:', postCommentsRef);
         const newCommentRef = push(postCommentsRef);
-        
         //stores comment data along with time stamp and username
         const commentDataWithUsername = {
           ...commentData,
@@ -283,9 +278,7 @@ function PostDetailScreen({ route }) {
           timestamp: serverTimestamp(),
           //replies: [],
         };
-
         console.log('comment data:', commentDataWithUsername);
-  
         set(newCommentRef, commentDataWithUsername);
         //same again for storing the comments on the user's profile page
         const userCommentsRef = ref(db, `users/${userData.uid}/posts/${postID}/comments`);

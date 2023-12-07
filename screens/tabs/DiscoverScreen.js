@@ -12,7 +12,7 @@ const { width } = Dimensions.get("screen");
 function DiscoverScreenDisplay() {
   const [posts, setPosts] = useState({});
   const [parties, setParties] = useState([]);
-  const [searchKeyword, setSearchKeyword] = useState(""); // State to store the search keyword
+  const [searchKeyword, setSearchKeyword] = useState(""); 
 
   const nav = useNavigation();
 

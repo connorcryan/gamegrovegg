@@ -45,7 +45,6 @@ function ProfileScreen({username}) {
     });
 
     return () => {
-      // Cleanup the listener when the component unmounts
       unsubscribe();
       };
     }
