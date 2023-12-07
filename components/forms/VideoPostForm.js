@@ -25,14 +25,13 @@ function VideoPostForm({onClose}) {
       presentPostParty.trim() !== "" &&
       presentPostVideo
     ) {
-      // All fields are not empty, proceed with adding the post
+  
       addNewPost({
         title: presentPostTitle,
         text: presentPostText,
         party: presentPostParty,
         video: presentPostVideo
       });
-      // Close the modal
       onClose();
     } else {
       Alert.alert("Please ensure all inputs are not empty");
@@ -44,11 +43,11 @@ function VideoPostForm({onClose}) {
     const userData = authCtx.userData;
 
   if (userData && userData.username) {
-    // Include the username in the post data
+    //include the username in the post data
     postData.username = userData.username;
 
     console.log("addNewPost function is called");
-    const newPostRef = push(ref(db, "posts")); // Create a reference to the new post
+    const newPostRef = push(ref(db, "posts")); 
     const videoFileName = `post_${Date.now()}.mp4`;
 
     //upload the video to firebase storage
@@ -65,7 +64,6 @@ function VideoPostForm({onClose}) {
         contentType: "video/mp4",
       });
 
-      // Use the `then` method to handle the completion of the upload task
       uploadTask.then(async (snapshot) => {
         const videoUrl = await getDownloadURL(snapshot.ref);
 
