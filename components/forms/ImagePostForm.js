@@ -1,11 +1,15 @@
 import { db } from '../../firebase-config';
-import { ref, push, remove, set } from 'firebase/database';
+import { ref, push, remove, set, get, onValue } from 'firebase/database';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { useState } from "react";
-import { StyleSheet, TextInput, View, Text, SafeAreaView, TouchableWithoutFeedback, Keyboard, Alert, Image } from "react-native";
-import { Colors } from "../../constants/styles";
+import { useState, useContext, useEffect, useRef } from "react";
+import { AuthContext } from '../store/auth-context';
+import { StyleSheet, TextInput, View, Text, SafeAreaView, TouchableWithoutFeedback, Keyboard, Alert, Image, Dimensions, TouchableOpacity } from "react-native";
+import { Colors, FormStyles, PostTextStyle, PartySearch } from "../../constants/styles";
 import * as ImagePicker from 'expo-image-picker';
 import Button from '../ui/Button';
+import { Ionicons } from '@expo/vector-icons';
+
+const { width } = Dimensions.get("screen");
 
 function ImagePostForm({onClose}) {
   
@@ -13,6 +17,51 @@ function ImagePostForm({onClose}) {
   const [presentPostParty, setPresentPostParty] = useState("");
   const [presentPostImage, setPresentPostImage] = useState("");
   const [presentPostText, setPresentPostText] = useState("");
+  const [selectedParty, setSelectedParty] = useState("");
+  const [parties, setParties] = useState([]);
+  const [searchKeyword, setSearchKeyword] = useState(""); // State to store the search keyword
+  const [partyListVisible, setPartyListVisible] = useState(true);
+  const presentPostPartyInputRef = useRef(null);
+
+  const authCtx = useContext(AuthContext);
+
+  useEffect(() => {
+    const unsubscribeParties = onValue(ref(db, "parties"), (querySnapShot) => {
+      if (querySnapShot.exists()) {
+        let data = querySnapShot.val() || {};
+        setParties(data);
+      } else {
+        console.log("⛔️ Object is falsy");
+      }
+    });
+
+    return () => {
+      // Cleanup the listener when the component unmounts
+      unsubscribeParties();
+    };
+  }, []);
+
+  // func to filter parties
+  const filteredParties = Object.keys(parties).filter(
+    (key) =>
+      (searchKeyword !== "") &
+      parties[key].party.toLowerCase().includes(searchKeyword.toLowerCase())
+  );
+
+  useEffect(() => {
+    if (selectedParty) {
+      setPresentPostParty(selectedParty);
+    }
+  }, [selectedParty]);
+
+  const handlePartyPress = (party) => {
+    setSelectedParty(party.party);
+    setPartyListVisible(false);
+
+    if (presentPostPartyInputRef.current) {
+      presentPostPartyInputRef.current.setNativeProps({ text: party.party });
+    }
+  };
 
   const handleAddNewPost = () => {
     if (presentPostTitle.trim() !== '' && presentPostText.trim() !== '' && presentPostParty.trim() !== '' && presentPostImage.trim() !== '') {
@@ -26,35 +75,73 @@ function ImagePostForm({onClose}) {
     }
   };
 
-  async function addNewPost() {
-    const newPostRef = push(ref(db, 'posts')); // Create a reference to the new post
-    const imageFileName = `post_${Date.now()}.jpg`; //unique file name for the image 
+  async function addNewPost(postData) {
+    const userData = authCtx.userData;
+  
+    if (!userData || !userData.username) {
+      console.warn('User data is not available or does not contain a username.');
+      return;
+    }
+  
+    try {
+      //unique key for the post
+      const postId = push(ref(db, `posts/${postId}`)).key;
 
-    //upload the image to firebase storage
-    const storage = getStorage();
-    const imageRef = storageRef(storage, imageFileName);
+      const userPostsRef = ref(db, `users/${userData.uid}/posts/${postId}`);
+      const partyPostRef = ref(db, `parties/${presentPostParty}/posts/${postId}`);
+      const newAllPostRef = ref(db, `posts/${postId}`);
 
-    //upload the image file
-    try{
-        const snapshot = await uploadBytes(imageRef, presentPostImage);
-        const imageUrl = await getDownloadURL(imageRef);
+      const partyRef = ref(db, `parties/${presentPostParty}`);
+      const partySnapshot = await get(partyRef);
+  
+      if (!partySnapshot.exists()) {
+        console.warn('Selected party does not exist in the database.');
+        return;
+      }
+      
+      const imageFileName = `post_${Date.now()}.jpg`;
+  
+      const storage = getStorage();
+      const imageRef = storageRef(storage, imageFileName);
+  
+      const response = await fetch(presentPostImage);
+      const blob = await response.blob();
+  
+      const metadata = {
+        contentType: 'image/jpeg',
+      };
+  
+      await uploadBytes(imageRef, blob, metadata);
+      const imageUrl = await getDownloadURL(imageRef);
+  
+      const postDataWithUsername = { ...postData, username: userData.username, postID: postId };
 
-        set(newPostRef, { // Update the new post's data
-            title: presentPostTitle,
-            text: presentPostText,
-            party: presentPostParty,
-            image: presentPostImage,
-            timestamp: { '.sv': 'timestamp'}
-          });
-
-        setPresentPostTitle("");
-        setPresentPostText("");
-        setPresentPostParty("");
-        setPresentPostImage("");
-
-        onClose();
+      set(userPostsRef, {
+        ...postDataWithUsername,
+        timestamp: { ".sv": "timestamp" },
+      });
+  
+      set(partyPostRef, {
+        ...postDataWithUsername,
+        timestamp: { ".sv": "timestamp" },
+      });
+  
+      set(newAllPostRef, {
+        ...postDataWithUsername,
+        party: presentPostParty,
+        image: imageUrl,
+        timestamp: { ".sv": "timestamp" },
+      });
+  
+      setPresentPostTitle('');
+      setPresentPostText('');
+      setPresentPostParty('');
+      setPresentPostImage('');
+  
+      onClose();
     } catch (error) {
-        console.error('Error uploading image', error);
+      console.error('Error adding new post', error);
+      // Handle error appropriately (e.g., show an error message to the user)
     }
   }
 
@@ -72,6 +159,7 @@ function ImagePostForm({onClose}) {
         if (result.assets && result.assets.length > 0) {
             const selectedAsset = result.assets[0];
             setPresentPostImage(selectedAsset.uri);
+            //console.log("Selected Image URI: ", selectedAsset.uri);
         }
     }
   }
@@ -83,22 +171,42 @@ function ImagePostForm({onClose}) {
 
   return (
     <SafeAreaView style={styles.container}>
+      <View>
       <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-        <View style={styles.container}>
-        <Button onPress={onClose}></Button>
-          <Text style={styles.title}>Create your post!</Text>
-          <TextInput
-            placeholder="Party"
-            value={presentPostParty}
+        <View style={styles.formContainer}>
+        <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+              <Ionicons name="md-close" size={32} />
+            </TouchableOpacity>
+            <Text style={styles.title}>Create your post!</Text> 
+        <TextInput
+            ref={presentPostPartyInputRef}  
             style={[styles.inputTitle, styles.text]}
-            keyboardType="default"
-            multiline={true}
+            placeholder="Party..."
+            placeholderTextColor={Colors.gray500}
+            value={searchKeyword}
             onChangeText={(text) => {
-              setPresentPostParty(text);
+              setSearchKeyword(text);
+              setPartyListVisible(true); // Show the party list when typing
             }}
           />
+          {partyListVisible && filteredParties.length > 0 && (
+          <View style={styles.partiesSection}>
+            <Text style={styles.sectionTitle}>Parties</Text>
+            {filteredParties.map((key) => (
+              <TouchableOpacity
+                key={key}
+                style={styles.partyContainer}
+                onPress={() => handlePartyPress(parties[key])}
+                
+              >
+                <Text style={styles.partyName}>{parties[key]?.party}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
           <TextInput
             placeholder="Post Title"
+            placeholderTextColor={Colors.gray500}
             value={presentPostTitle}
             style={[styles.inputTitle, styles.text]}
             keyboardType="default"
@@ -110,6 +218,7 @@ function ImagePostForm({onClose}) {
         
           <TextInput
             placeholder="Post content..."
+            placeholderTextColor={Colors.gray500}
             value={presentPostText}
             style={[styles.inputText, styles.text]}
             keyboardType="default"
@@ -121,13 +230,23 @@ function ImagePostForm({onClose}) {
           {presentPostImage ? (
             <Image source={{ uri: presentPostImage }} style={styles.selectedImage}/>
           ) : null}
-          <Button title="Select Image" onPress={handleImagePicker} />         
+          
+          <TouchableOpacity
+              onPress={handleImagePicker}
+              style={styles.createPostButton}
+            >
+              <Text style={styles.buttonText}>Select Image</Text>
+            </TouchableOpacity>
+          <TouchableOpacity
+              onPress={handleAddNewPost}
+              style={styles.createPostButton}
+            >
+              <Text style={styles.buttonText}>Create Post</Text>
+           </TouchableOpacity>   
         </View>
+        
       </TouchableWithoutFeedback>
       <View>
-        <View>
-        <Button onPress={handleAddNewPost}> Create Post </Button>
-        </View>
         {/* <View style={styles.button}>
           <Button
             title="Remove Post"
@@ -137,6 +256,7 @@ function ImagePostForm({onClose}) {
           />
         </View> */}
       </View>
+      </View>
     </SafeAreaView>
   );
 }
@@ -144,69 +264,53 @@ function ImagePostForm({onClose}) {
 export default ImagePostForm;
 
 const styles = StyleSheet.create({
+  closeButton: {
+    ...FormStyles.closeButton
+  },
+  createPostButton: {
+    ...FormStyles.createPostButton,
+  },
+  buttonText: {
+    ...FormStyles.buttonText,
+  },
     container: {
-      flex: 1,
-      maxHeight: "90%",
-      //justifyContent: 'center',
-      alignItems: 'center', 
-      marginTop: 50,
-      marginHorizontal: 10,
-      backgroundColor: Colors.accent500,
-      borderRadius: 12,
-      // elevation: 2,
-      // shadowColor: 'white',
-      // shadowOffset: { width: 1, height: 1 },
-      // shadowOpacity: 0.25,
-      // shadowRadius: 4,
+      ...FormStyles.container,
+    },
+    formContainer: {
+      ...FormStyles.formContainer,
     },
     title: {
-      //alignItems: 'center',
-      fontSize: 24,
-      fontWeight: 'bold',
-      marginBottom: 40,
-      paddingHorizontal: 10,
-      paddingTop: 10,
-      paddingBottom: 5,
-      color: Colors.primary700,
+      ...FormStyles.title,
     },
     text: {
-      fontSize: 16,
-      paddingHorizontal: 10,
-      paddingTop: 5,
-      paddingBottom: 10,
-      minWidth: '80%',
-      maxWidth: '80%',
-      maxHeight: 100,
-      color: Colors.primary800,
+      ...FormStyles.text,
   },
     inputTitle: {
-        backgroundColor: Colors.accent400,
-        flexWrap: 'wrap',
-        padding: 10,
-        borderRadius: 12,
-        width: "90%",
-        marginTop: 15,
+      ...FormStyles.inputTitle,
     },
     inputText: {
-      backgroundColor: Colors.accent400,
-      flexWrap: 'wrap',
-      padding: 10,
-      borderRadius: 12,
-      minHeight: 50,
-      width: "90%",
-      marginTop: 15,
-      //color: "#000",
+      ...FormStyles.inputText,
   },
   selectedImage: {
     width: 200,
     height: 200,
+    borderWidth: 4,
+    borderColor: Colors.primary200,
+    borderRadius: 10,
     resizeMode: 'cover',
     marginVertical: 10,
   },
-    button: {
-      borderRadius: 12,
-      padding: 5,
-      marginTop: 10,
-      marginBottom: 30,
+
+    partyTitle: {
+      ...PostTextStyle.headings,
+    },
+    partiesSection: {
+      ...FormStyles.partiesSection,
+    },
+    partyContainer: {
+      ...FormStyles.partyContainer,
+    },
+    partyName: {
+      ...PartySearch.partyName,
     }
 });

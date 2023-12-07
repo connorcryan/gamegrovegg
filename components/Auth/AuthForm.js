@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { Colors } from '../../constants/styles';
 
 import Button from '../ui/Button';
 import Input from './Input';
 
+//auth form takes three props
 function AuthForm({ isLogin, onSubmit, credentialsInvalid }) {
+  //useState hook to manage the states of the input fields starting as empty
   const [enteredUsername, setEnteredUsername] = useState('');
   const [enteredEmail, setEnteredEmail] = useState('');
   const [enteredConfirmEmail, setEnteredConfirmEmail] = useState('');
@@ -19,6 +22,7 @@ function AuthForm({ isLogin, onSubmit, credentialsInvalid }) {
     confirmPassword: passwordsDontMatch,
   } = credentialsInvalid;
 
+  //swtich statement to update the corresponding states with inputType
   function updateInputValueHandler(inputType, enteredValue) {
     switch (inputType) {
       case 'username':
@@ -39,19 +43,31 @@ function AuthForm({ isLogin, onSubmit, credentialsInvalid }) {
     }
   }
 
+  //call the onSubmit prop with the enetered values the updateInputHandler
   function submitHandler() {
-    onSubmit({
-      username: enteredUsername,
-      email: enteredEmail,
-      confirmEmail: enteredConfirmEmail,
-      password: enteredPassword,
-      confirmPassword: enteredConfirmPassword,
-    });
+    if (isLogin) {
+      // for login only pass email and password
+      onSubmit({
+        email: enteredEmail,
+        password: enteredPassword,
+      });
+    } else {
+      //for signup pass all fields
+      onSubmit({
+        username: enteredUsername,
+        email: enteredEmail,
+        confirmEmail: enteredConfirmEmail,
+        password: enteredPassword,
+        confirmPassword: enteredConfirmPassword,
+      });
+    }
   }
 
+  //renders the necessary input component based on if it is Login screen
+  //or sign up screen
   return (
-    <View style={styles.form}>
-      <View>
+    <View >
+      <View >
       {!isLogin && (<Input
           label="Username"
           onUpdateValue={updateInputValueHandler.bind(this, 'username')}
@@ -109,6 +125,16 @@ export default AuthForm;
 
 const styles = StyleSheet.create({
   buttons: {
+    justifyContent: 'center',
+    alignItems: 'center',
     marginTop: 12,
   },
+  form: {
+    flex: 1,
+    backgroundColor: Colors.primary50,
+  },
+  inputText: {
+    backgroundColor: Colors.primary800,
+  },
+  
 });

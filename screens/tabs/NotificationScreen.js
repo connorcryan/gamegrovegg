@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-function ChatScreen() {
+function NotificationScreen() {
   return (
     <View style={styles.rootContainer}>
       <Text style={styles.title}>Welcome!</Text>
@@ -9,7 +9,7 @@ function ChatScreen() {
   );
 }
 
-export default ChatScreen
+export default NotificationScreen
 
 const styles = StyleSheet.create({
   rootContainer: {

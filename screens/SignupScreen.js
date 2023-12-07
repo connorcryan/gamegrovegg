@@ -10,22 +10,24 @@ function SignupScreen() {
 
   const authCtx = useContext(AuthContext);
 
-  async function signupHandler({ email, password}) {
+  async function signupHandler({ username, email, password}) {
     setIsAuthenticating(true);
     try {
-      const token = await createUser( email, password);
-      authCtx.authenticate(token);
+      const {token, userData } = await createUser( username, email, password);
+      console.log("Received token:", token);
+      console.log("Received userData:", userData);
+      
+      authCtx.authenticate(token, userData);
     } catch (error) {
+      console.error('Error during signup:', error)
       Alert.alert('Authentication failed, could not create user.');
       setIsAuthenticating(false);
-    }
-    
+    } 
   }
 
   if (isAuthenticating) {
     return <LoadingOverlay message='Creating user...'/>
   }
-
   return <AuthContent onAuthenticate={signupHandler}/>;
 }
 

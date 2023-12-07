@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "gamegrovegg",
+    "name": "GameGrove",
     "slug": "gamegrovegg",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -9,22 +9,30 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#000000"
     },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "buildNumber": "1.0.0",
+      "supportsTablet": true,
+      "bundleIdentifier": "com.connorr.gamegrovegg"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.connorr.gamegrovegg"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "b02f1fa0-cb34-4e99-9988-0d50cb8e11d0"
+      }
     }
   }
 }

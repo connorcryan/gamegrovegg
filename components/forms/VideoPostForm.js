@@ -1,7 +1,8 @@
 import { db } from '../../firebase-config';
 import { ref, push, remove, set } from 'firebase/database';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { useState } from "react";
+import { useState, useContext } from "react";
+import { AuthContext } from '../store/auth-context';
 import { StyleSheet, TextInput, View, Text, SafeAreaView, TouchableWithoutFeedback, Keyboard, Alert } from "react-native";
 import { Colors } from "../../constants/styles";
 import * as ImagePicker from 'expo-image-picker';
@@ -13,23 +14,24 @@ function VideoPostForm({onClose}) {
   const [presentPostTitle, setPresentPostTitle] = useState("");
   const [presentPostText, setPresentPostText] = useState("");
   const [presentPostParty, setPresentPostParty] = useState("");
-  const [presentPostVideo, setPresentPostVideo] = useState("");
+  const [presentPostVideo, setPresentPostVideo] = useState(null);
+
+  const authCtx = useContext(AuthContext);
 
   const handleAddNewPost = () => {
     if (
       presentPostTitle.trim() !== "" &&
       presentPostText.trim() !== "" &&
       presentPostParty.trim() !== "" &&
-      presentPostVideo.trim() !== ""
+      presentPostVideo
     ) {
-      // All fields are not empty, proceed with adding the post
+  
       addNewPost({
         title: presentPostTitle,
         text: presentPostText,
         party: presentPostParty,
         video: presentPostVideo
       });
-      // Close the modal
       onClose();
     } else {
       Alert.alert("Please ensure all inputs are not empty");
@@ -37,35 +39,58 @@ function VideoPostForm({onClose}) {
     }
   };
 
-  async function addNewPost() {
-    const newPostRef = push(ref(db, 'posts')); // Create a reference to the new post
+  async function addNewPost(postData) {
+    const userData = authCtx.userData;
+
+  if (userData && userData.username) {
+    //include the username in the post data
+    postData.username = userData.username;
+
+    console.log("addNewPost function is called");
+    const newPostRef = push(ref(db, "posts")); 
     const videoFileName = `post_${Date.now()}.mp4`;
 
-    //upload the image to firebase storage
+    //upload the video to firebase storage
     const storage = getStorage();
     const videoRef = storageRef(storage, videoFileName);
 
     try {
+      const response = await fetch(presentPostVideo);
+      console.log("Video fetched");
+      const blob = await response.blob();
+      console.log("Blob created");
 
-        const snapshot = await uploadBytes(videoRef, presentPostVideo);
-        const videoUrl = await getDownloadURL(videoRef);
+      const uploadTask = uploadBytes(videoRef, blob, {
+        contentType: "video/mp4",
+      });
 
-        set(newPostRef, { // Update the new post's data
-            title: presentPostTitle,
-            text: presentPostText,
-            party: presentPostParty,
-            video: presentPostVideo,
-            timestamp: { '.sv': 'timestamp'}
-          });
-          setPresentPostTitle("");
-          setPresentPostText("");
-          setPresentPostParty("");
-          setPresentPostVideo("");
+      uploadTask.then(async (snapshot) => {
+        const videoUrl = await getDownloadURL(snapshot.ref);
 
-          onClose();
-    }catch(error) {
-        console.error('Error uploading video', error);
+        set(newPostRef, {
+          // Update the new post's data
+          title: presentPostTitle,
+          text: presentPostText,
+          party: presentPostParty,
+          video: videoUrl,
+          username: userData.username,
+          timestamp: { ".sv": "timestamp" },
+        });
+
+        setPresentPostTitle("");
+        setPresentPostText("");
+        setPresentPostParty("");
+        setPresentPostVideo(null);
+
+        onClose();
+      });
+    } catch (error) {
+      console.error("Error uploading video", error);
+      console.log("Error occurred in addNewPost function");
     }
+  } else {
+    console.warn("User data is not available or does not contain a username.");
+  }
   }
 
   const handleVideoPicker = async () => {

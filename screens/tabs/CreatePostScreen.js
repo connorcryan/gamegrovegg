@@ -1,10 +1,11 @@
 import { Modal, StyleSheet, Text, View, TouchableHighlight,SafeAreaView, Button } from 'react-native';
-import { Colors } from '../../constants/styles';
+import { Colors, CreatPostStyles } from '../../constants/styles';
 import PostButton from '../../components/ui/PostButton';
 import { useState } from 'react';
 import TextPostForm from '../../components/forms/TextPostForm';
 import ImagePostForm from '../../components/forms/ImagePostForm';
 import VideoPostForm from '../../components/forms/VideoPostForm';
+import CreatePartyForm from '../../components/forms/PartyCreateForm';
 
 function CreatePostScreen() {
 
@@ -13,6 +14,7 @@ function CreatePostScreen() {
   const [isTextModalVisible, setTextModalVisible] = useState(false);
   const [isImageModalVisible, setImageModalVisible] = useState(false);
   const [isVideoModalVisible, setVideoModalVisible] = useState(false);
+  const [isPartyModalVisible, setPartyModalVisible] = useState(false);
 
   const toggleTextModal = () => {
     setTextModalVisible(!isTextModalVisible);
@@ -26,53 +28,87 @@ function CreatePostScreen() {
     setVideoModalVisible(!isVideoModalVisible);
   }
 
+  const togglePartyModal = () => {
+    setPartyModalVisible(!isPartyModalVisible);
+  }
+
   return (
-    <View style={styles.rootContainer}>
-      <View style={styles.card}>
-        <Text style={styles.title}>Create Post</Text>
-        <View style={styles.post}>
-          <View>
-            <PostButton onPress={toggleTextModal}>Text Post</PostButton>
+    <View style={styles.createView}>
+      <View style={styles.rootContainer}>
+        <View style={styles.card}>
+          <Text style={styles.title}>Post Creation</Text>
+          <View style={styles.textContainer}>
+            <Text style={styles.text}>
+              Got something to share or discuss? Get it out there!
+            </Text>
+            <Text style={styles.text}>
+              Gamegrove is the perfect place to discuss all things gaming
+              related!
+            </Text>
           </View>
-          <View>
-            <PostButton onPress={toggleImageModal}>Image Post</PostButton>
+          <View style={styles.post}>
+            <View>
+              <PostButton onPress={toggleTextModal}>Text Post</PostButton>
+            </View>
+            <View>
+              <PostButton onPress={toggleImageModal}>Image Post</PostButton>
+            </View>
           </View>
-          <View>
+          {/* <View>
             <PostButton onPress={toggleVideoModal}>Video Post</PostButton>
-          </View>
-          <View>
+          </View> */}
+          {/* <View>
             <PostButton>Link</PostButton>
+          </View> */}
+        </View>
+        <View style={styles.card}>
+          <Text style={styles.title}>Party Creation</Text>
+          <View style={styles.textContainer}>
+            <Text style={styles.text}>
+              Can't find a party crash? Never fear, you can host your own!
+            </Text>
+            <Text style={styles.text}>
+              Feel free to create a party to discuss any gaming topic you want.
+              Whether it is table top games or a place to discuss the latest
+              developments in gaming technology, if it's gaming related it has a
+              home on Gamegrove!
+            </Text>
+          </View>
+          <View style={styles.post}>
+            <View>
+              <PostButton onPress={togglePartyModal}>Create Party</PostButton>
+            </View>
           </View>
         </View>
-      </View>
-      <SafeAreaView>
-      <View>
-        <Modal
-          animationType="slide"
-          transparent={false}
-          visible={isTextModalVisible}
-        >
-          <TextPostForm 
-            onClose={toggleTextModal} 
-            inputTitle={inputTitle} 
-            setInputTitle={setInputTitle} 
-            inputText={inputText} 
-            setInputText={setInputText}/>
-        </Modal>
-        <Modal
-          animationType="slide"
-          transparent={false}
-          visible={isImageModalVisible}
-          >
-            <ImagePostForm
-              onClose={toggleImageModal} 
-              inputTitle={inputTitle} 
-              setInputTitle={setInputTitle} 
-              inputText={inputText} 
-              setInputText={setInputText}
+        <SafeAreaView>
+          <View>
+            <Modal
+              animationType="slide"
+              transparent={false}
+              visible={isTextModalVisible}
+            >
+              <TextPostForm
+                onClose={toggleTextModal}
+                inputTitle={inputTitle}
+                setInputTitle={setInputTitle}
+                inputText={inputText}
+                setInputText={setInputText}
               />
-        </Modal>
-        <Modal
+            </Modal>
+            <Modal
+              animationType="slide"
+              transparent={false}
+              visible={isImageModalVisible}
+            >
+              <ImagePostForm
+                onClose={toggleImageModal}
+                inputTitle={inputTitle}
+                setInputTitle={setInputTitle}
+                inputText={inputText}
+                setInputText={setInputText}
+              />
+            </Modal>
+            {/* <Modal
           animationType="slide"
           transparent={false}
           visible={isVideoModalVisible}
@@ -84,9 +120,23 @@ function CreatePostScreen() {
               inputText={inputText} 
               setInputText={setInputText}
               />
-        </Modal>
+        </Modal> */}
+            <Modal
+              animationType="slide"
+              transparent={false}
+              visible={isPartyModalVisible}
+            >
+              <CreatePartyForm
+                onClose={togglePartyModal}
+                inputTitle={inputTitle}
+                setInputTitle={setInputTitle}
+                inputText={inputText}
+                setInputText={setInputText}
+              />
+            </Modal>
+          </View>
+        </SafeAreaView>
       </View>
-      </SafeAreaView>
     </View>
   );
 }
@@ -94,73 +144,38 @@ function CreatePostScreen() {
 export default CreatePostScreen
 
 const styles = StyleSheet.create({
-  rootContainer: {
+  createView: {
     flex: 1,
-    backgroundColor: Colors.primary50,
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: Colors.primary100,
+  },
+  rootContainer: {
+    ...CreatPostStyles.rootContainer,
   },
   card: {
-    flex: 1,
-    backgroundColor: Colors.accent500,
-    width: '95%',
-    //flexDirection: 'row',
-    //justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 10,
-    marginBottom: 10,
-    padding: 20,
-    borderRadius: 16,
-    elevation: 2,
-    shadowColor: 'white',
-    shadowOffset: { width: 1, height: 1 },
-    shadowOpacity: 0.35,
-    shadowRadius: 4,
+    ...CreatPostStyles.card,
   },
   post: {
-    marginTop: 40,
-    //backgroundColor: 'white',
-    alignItems: 'center',
-    justifyContent: 'center',
-    //marginHorizontal: 10,
-    width: '120%',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    ...CreatPostStyles.post,
   },
-  text: {
-
+  textContainer: {
+    ...CreatPostStyles.textContainer,
+  },
+  text : {
+    ...CreatPostStyles.text,
   },
   title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    //justifyContent: 'flex-start',
+    ...CreatPostStyles.title,
   },
   centeredView: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 50,
+    ...CreatPostStyles.centeredView,
   },
   modalView: {
-    margin: 20,
-    //backgroundColor: "white",
-    borderRadius: 20,
-    padding: 35,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    ...CreatPostStyles.modalView,
   },
   closeButton: {
-    padding: 10,
+    ...CreatPostStyles.closeButton
   },
   closeText: {
-    fontSize: 20,
+    ...CreatPostStyles.closeText
   },
 });
